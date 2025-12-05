@@ -202,7 +202,7 @@
     }
 
     .question-text{
-      font-size:18px;
+      font-size:19px; /* Augmenté de 18px à 19px */
       margin:14px 0 18px 0;
       color:#111827;
       line-height:1.5;
@@ -216,7 +216,7 @@
     .option{
       padding:14px 16px;
       border-radius:12px;
-      border:1px solid #e6e9f2;
+      border:2px solid var(--accent1); /* Bordure bleue visible */
       background:white;
       cursor:pointer;
       transition:transform .12s, box-shadow .12s, border-color .12s;
@@ -232,10 +232,14 @@
       min-width:30px;
       text-align:center;
       color:var(--accent1);
+      font-size:17px; /* Augmenté pour plus de visibilité */
     }
     .option.disabled{cursor:not-allowed;opacity:0.7;transform:none;box-shadow:none}
     .option.correct{border-color:var(--success);background:rgba(16,185,129,0.07)}
     .option.incorrect{border-color:var(--danger);background:rgba(239,68,68,0.06)}
+    .option .content {
+      font-size:16px; /* Taille augmentée pour les réponses */
+    }
 
     .nav{
       display:flex;
@@ -255,6 +259,7 @@
       cursor:pointer;
       box-shadow:0 8px 22px rgba(108,99,255,0.08);
       transition: opacity 0.2s;
+      font-size:15px; /* Augmenté */
     }
     .nav .btn:active{opacity:0.8}
     .btn.secondary{background:transparent;color:var(--muted);border:1px solid #eef2ff;font-weight:600}
@@ -358,6 +363,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      font-size:15px; /* Augmenté */
     }
     #backToHomeBtn:hover {
       background: #f8fafc;
@@ -373,7 +379,7 @@
       .panel-right{order:1;padding:18px}
     }
 
-    /* Améliorations pour téléphones */
+    /* Améliorations pour téléphones - TAILLES AUGMENTÉES */
     @media (max-width: 600px) {
       body {
         padding: 10px;
@@ -401,7 +407,7 @@
       }
       
       .question-text {
-        font-size: 16px;
+        font-size: 18px; /* Augmenté de 16px à 18px */
         line-height: 1.4;
       }
       
@@ -412,12 +418,16 @@
       .option {
         padding: 12px;
         min-height: 48px;
-        font-size: 14px;
+        border-width: 1.5px; /* Bordure légèrement plus fine sur mobile mais visible */
       }
       
       .option .label {
         min-width: 25px;
-        font-size: 14px;
+        font-size: 16px; /* Augmenté de 14px à 16px */
+      }
+      
+      .option .content {
+        font-size: 15px; /* Augmenté de 14px à 15px */
       }
       
       .nav {
@@ -428,6 +438,7 @@
       .nav .btn {
         width: 100%;
         padding: 12px;
+        font-size: 16px; /* Augmenté sur mobile */
       }
       
       .difficulty-buttons {
@@ -443,7 +454,7 @@
       
       /* Pour les équations MathJax sur mobile */
       mjx-container {
-        font-size: 100% !important;
+        font-size: 110% !important; /* Augmenté de 100% à 110% */
       }
       
       /* Ajuster les boutons de partage */
@@ -465,11 +476,15 @@
       /* Améliorer l'affichage des résultats */
       .results {
         padding: 15px;
-        font-size: 14px;
+        font-size: 15px; /* Augmenté */
       }
       
       .big-score {
-        font-size: 28px;
+        font-size: 32px; /* Légèrement réduit mais visible */
+      }
+      
+      .q-number, .timer, .q-difficulty {
+        font-size: 14px; /* Augmenté */
       }
       
       /* Correction box mobile */
@@ -479,14 +494,20 @@
         max-height: 85vh;
       }
       .correction-title {
-        font-size: 16px;
+        font-size: 17px; /* Augmenté */
       }
       .correction-content {
-        font-size: 14px;
+        font-size: 15px; /* Augmenté */
       }
       .correction-math {
-        font-size: 15px;
+        font-size: 16px; /* Augmenté */
         padding: 10px;
+      }
+      
+      /* Bouton retour accueil sur mobile */
+      #backToHomeBtn {
+        font-size: 16px;
+        padding: 14px; /* Un peu plus de padding */
       }
     }
 
@@ -497,12 +518,15 @@
       }
       
       .question-text {
-        font-size: 15px;
+        font-size: 17px; /* Légèrement réduit mais lisible */
       }
       
       .option {
         padding: 10px;
-        font-size: 13px;
+      }
+      
+      .option .content {
+        font-size: 14px; /* Légèrement réduit */
       }
       
       .difficulty {
@@ -512,6 +536,10 @@
       
       .correction-box {
         padding: 16px;
+      }
+      
+      .correction-title {
+        font-size: 16px;
       }
     }
 
@@ -530,6 +558,39 @@
       .correction-box {
         max-height: 90vh;
       }
+      
+      /* Réduire légèrement les tailles en mode paysage pour éviter le débordement */
+      .question-text {
+        font-size: 16px;
+      }
+      
+      .option .content {
+        font-size: 14px;
+      }
+    }
+
+    /* Mode contraste amélioré pour la lisibilité */
+    .high-contrast-mode .option {
+      border: 2px solid #2563eb; /* Bleu plus foncé */
+    }
+    
+    .high-contrast-mode .option:hover {
+      border-color: #1d4ed8; /* Encore plus foncé au survol */
+    }
+    
+    .high-contrast-mode .option .label {
+      color: #2563eb;
+      font-weight: 800; /* Plus gras */
+    }
+    
+    .high-contrast-mode .question-text {
+      color: #111827;
+      font-weight: 600;
+    }
+    
+    .high-contrast-mode .nav .btn {
+      background: #2563eb;
+      border: 2px solid #1d4ed8;
     }
   </style>
 </head>
@@ -812,6 +873,7 @@
     let startTime = null;
     let timerInterval = null;
     let totalQuestions = 10;
+    let highContrastMode = false;
 
     // Elements
     const startBtn = document.getElementById('startBtn');
@@ -836,6 +898,59 @@
     const correctionOverlay = document.getElementById('correctionOverlay');
     const closeCorrectionBtn = document.getElementById('closeCorrectionBtn');
     const correctionContent = document.getElementById('correctionContent');
+
+    /* ---------------------------
+       Gestion du mode contraste
+       --------------------------- */
+    function toggleContrastMode() {
+      highContrastMode = !highContrastMode;
+      if (highContrastMode) {
+        document.body.classList.add('high-contrast-mode');
+        // Afficher un message temporaire
+        showNotification('Mode contraste élevé activé');
+      } else {
+        document.body.classList.remove('high-contrast-mode');
+        showNotification('Mode contraste élevé désactivé');
+      }
+      // Sauvegarder la préférence
+      localStorage.setItem('quizHighContrast', highContrastMode);
+    }
+
+    function showNotification(message) {
+      // Créer une notification temporaire
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--accent1);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: fadeInOut 3s ease;
+      `;
+      
+      // Ajouter l'animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translateY(-10px); }
+          10% { opacity: 1; transform: translateY(0); }
+          90% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-10px); }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.remove();
+        style.remove();
+      }, 3000);
+    }
 
     /* ---------------------------
        Gestion de la vue
@@ -1209,10 +1324,37 @@
       }
     });
 
-    // Initialiser l'affichage
+    // Initialiser l'affichage et le mode contraste
     document.addEventListener('DOMContentLoaded', ()=>{
       questionTextEl.textContent = "Choisissez un nombre de questions puis appuyez sur 'Commencer le Quiz'";
       optionsContainer.innerHTML = '';
+      
+      // Charger la préférence de contraste
+      const savedContrast = localStorage.getItem('quizHighContrast');
+      if (savedContrast === 'true') {
+        highContrastMode = true;
+        document.body.classList.add('high-contrast-mode');
+      }
+      
+      // Ajouter un bouton pour basculer le mode contraste
+      const contrastBtn = document.createElement('button');
+      contrastBtn.textContent = '👁️ Contraste';
+      contrastBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--accent1);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      `;
+      contrastBtn.addEventListener('click', toggleContrastMode);
+      document.body.appendChild(contrastBtn);
     });
   </script>
 </body>
