@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#6c63ff">
   <title>Quiz — Nombres Complexes</title>
 
@@ -18,6 +18,7 @@
       document.head.appendChild(s);
     })();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async=""></script>
 
   <style>
     :root{
@@ -55,6 +56,7 @@
       display:grid;
       grid-template-columns: 380px 1fr;
       gap:0;
+      transition: all 0.3s ease;
     }
 
     /* Left panel (intro + controls) */
@@ -135,7 +137,9 @@
       border-radius:12px;
       cursor:pointer;
       box-shadow:0 8px 22px rgba(108,99,255,0.14);
+      transition: transform 0.2s;
     }
+    .start-btn:active{transform:scale(0.98)}
 
     .meta{
       font-size:13px;
@@ -158,7 +162,9 @@
       border-radius:10px;
       cursor:pointer;
       font-weight:600;
+      transition: opacity 0.2s;
     }
+    .btn-small:active{opacity:0.8}
 
     /* Right panel (quiz) */
     .panel-right{
@@ -248,7 +254,9 @@
       font-weight:700;
       cursor:pointer;
       box-shadow:0 8px 22px rgba(108,99,255,0.08);
+      transition: opacity 0.2s;
     }
+    .nav .btn:active{opacity:0.8}
     .btn.secondary{background:transparent;color:var(--muted);border:1px solid #eef2ff;font-weight:600}
 
     .results{
@@ -263,6 +271,74 @@
     .big-score{font-size:36px;color:var(--accent1);font-weight:900}
     .small-muted{color:var(--muted);font-size:14px}
 
+    /* Correction box */
+    .correction-box {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      z-index: 1000;
+      max-width: 90%;
+      width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .correction-box.show {
+      display: block;
+    }
+    .correction-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    .correction-overlay.show {
+      display: block;
+    }
+    .correction-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef2ff;
+    }
+    .correction-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent1);
+    }
+    .close-correction {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .correction-content {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #374151;
+    }
+    .correction-math {
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-family: 'Cambria Math', 'Latin Modern Math', STIXGeneral, serif;
+      font-size: 17px;
+      text-align: center;
+    }
+
     footer.author{
       text-align:center;
       margin-top:14px;
@@ -270,11 +346,190 @@
       color:var(--muted);
     }
 
+    /* Bouton retour accueil */
+    #backToHomeBtn {
+      margin-top: 15px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid #eef2ff;
+      color: var(--muted);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #backToHomeBtn:hover {
+      background: #f8fafc;
+    }
+    #backToHomeBtn:active {
+      transform: scale(0.98);
+    }
+
     /* Responsive */
     @media (max-width:880px){
       .card{grid-template-columns:1fr; padding:0}
       .panel-left{order:2;padding:18px}
       .panel-right{order:1;padding:18px}
+    }
+
+    /* Améliorations pour téléphones */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+        justify-content: flex-start;
+        min-height: 100vh;
+      }
+      
+      .card {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 12px;
+        margin: 0;
+        grid-template-columns: 1fr;
+      }
+      
+      .panel-left {
+        min-height: auto;
+        padding: 20px;
+        gap: 15px;
+      }
+      
+      .panel-right {
+        padding: 20px;
+      }
+      
+      .question-text {
+        font-size: 16px;
+        line-height: 1.4;
+      }
+      
+      .options {
+        gap: 8px;
+      }
+      
+      .option {
+        padding: 12px;
+        min-height: 48px;
+        font-size: 14px;
+      }
+      
+      .option .label {
+        min-width: 25px;
+        font-size: 14px;
+      }
+      
+      .nav {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .nav .btn {
+        width: 100%;
+        padding: 12px;
+      }
+      
+      .difficulty-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .difficulty {
+        min-width: 70px;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      
+      /* Pour les équations MathJax sur mobile */
+      mjx-container {
+        font-size: 100% !important;
+      }
+      
+      /* Ajuster les boutons de partage */
+      .share-row {
+        flex-wrap: wrap;
+      }
+      
+      .btn-small {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      
+      /* Ajuster la barre de progression */
+      .progress {
+        height: 8px;
+        margin-bottom: 12px;
+      }
+      
+      /* Améliorer l'affichage des résultats */
+      .results {
+        padding: 15px;
+        font-size: 14px;
+      }
+      
+      .big-score {
+        font-size: 28px;
+      }
+      
+      /* Correction box mobile */
+      .correction-box {
+        width: 95%;
+        padding: 20px;
+        max-height: 85vh;
+      }
+      .correction-title {
+        font-size: 16px;
+      }
+      .correction-content {
+        font-size: 14px;
+      }
+      .correction-math {
+        font-size: 15px;
+        padding: 10px;
+      }
+    }
+
+    /* Pour les très petits écrans (iPhone SE, etc.) */
+    @media (max-width: 375px) {
+      .panel-left, .panel-right {
+        padding: 15px;
+      }
+      
+      .question-text {
+        font-size: 15px;
+      }
+      
+      .option {
+        padding: 10px;
+        font-size: 13px;
+      }
+      
+      .difficulty {
+        min-width: 60px;
+        font-size: 12px;
+      }
+      
+      .correction-box {
+        padding: 16px;
+      }
+    }
+
+    /* Mode paysage sur mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+      body {
+        padding: 5px;
+        align-items: flex-start;
+      }
+      
+      .card {
+        max-height: 95vh;
+        overflow-y: auto;
+      }
+      
+      .correction-box {
+        max-height: 90vh;
+      }
     }
   </style>
 </head>
@@ -315,7 +570,7 @@
 
       <div class="share-row">
         <button class="btn-small" id="shareBtn" title="Partager (si supporté)">Partager</button>
-        <a id="downloadLink" class="btn-small" download="quiz_complexes.html" title="Télécharger le fichier HTML">Télécharger</a>
+        <a id="downloadLink" class="btn-small" download="quiz_complexes.html" title="Télécharger le fichier HTML" href="#">Télécharger</a>
       </div>
 
       <div style="font-size:12px;color:rgba(255,255,255,0.86);margin-top:10px">
@@ -325,18 +580,18 @@
 
     <div class="panel-right">
       <div class="progress" aria-hidden="true">
-        <div class="fill" id="progressFill"></div>
+        <div class="fill" id="progressFill" style="width: 20%;"></div>
       </div>
 
       <div class="question-head">
         <div>
-          <div class="q-number" id="qNumber">Question 0/0</div>
-          <div class="q-difficulty" id="qBadge">—</div>
+          <div class="q-number" id="qNumber">Question 3 / 10</div>
+          <div class="q-difficulty" id="qBadge">Moyen</div>
         </div>
         <div class="timer" id="timer">⏱️ 00:00</div>
       </div>
 
-      <div class="question-text" id="questionText">Appuyez sur <strong>Commencer</strong> pour lancer le quiz.</div>
+      <div class="question-text" id="questionText">Choisissez un nombre de questions puis appuyez sur "Commencer le Quiz"</div>
 
       <div class="options" id="optionsContainer" role="list"></div>
 
@@ -347,6 +602,8 @@
           <button class="btn" id="nextBtn">Suivant</button>
         </div>
       </div>
+
+      <button id="backToHomeBtn">Retour à l'accueil</button>
 
       <div class="results" id="resultsBox" aria-live="polite">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -366,10 +623,21 @@
     </div>
   </div>
 
+  <!-- Boîte de correction -->
+  <div class="correction-overlay" id="correctionOverlay"></div>
+  <div class="correction-box" id="correctionBox">
+    <div class="correction-header">
+      <div class="correction-title">Correction</div>
+      <button class="close-correction" id="closeCorrectionBtn">&times;</button>
+    </div>
+    <div class="correction-content" id="correctionContent">
+      <!-- Le contenu de la correction sera inséré ici -->
+    </div>
+  </div>
+
   <script>
     /* ---------------------------
-       Base de données des questions
-       (issues et complétées d'après votre contenu)
+       Base de données des questions avec explications en texte normal
        --------------------------- */
     const questionDatabase = [
       // FACILE
@@ -378,88 +646,144 @@
         "\\(z = r(\\cos\\theta + i\\sin\\theta)\\)",
         "\\(z = re^{i\\theta}\\)",
         "\\(z = a - ib\\)"
-      ], correctIndex:0, difficulty:"facile", explanation:"La forme algébrique s'écrit \\(z = a + ib\\)."},
+      ], correctIndex:0, difficulty:"facile", 
+      explanation:"La forme algébrique d'un nombre complexe s'écrit z = a + ib, où a est la partie réelle et b la partie imaginaire. Les autres options sont la forme trigonométrique et exponentielle."},
 
-      {q:"Que vaut \\(i^2\\) ?", options:["\\(-1\\)","\\(1\\)","\\(0\\)","\\(i\\)"], correctIndex:0, difficulty:"facile", explanation:"Par définition \\(i^2=-1\\)."},
+      {q:"Que vaut \\(i^2\\) ?", options:["\\(-1\\)","\\(1\\)","\\(0\\)","\\(i\\)"], correctIndex:0, difficulty:"facile", 
+      explanation:"Par définition, i² = -1. C'est la propriété fondamentale du nombre imaginaire i."},
 
       {q:"Si \\(z = 3 + 4i\\), quel est le conjugué \\(\\overline{z}\\) ?", options:[
         "\\(3 - 4i\\)","\\(-3 + 4i\\)","\\(-3 - 4i\\)","\\(4 + 3i\\)"
-      ], correctIndex:0, difficulty:"facile", explanation:"On change le signe de la partie imaginaire."},
+      ], correctIndex:0, difficulty:"facile", 
+      explanation:"Le conjugué de z = a + ib est z̄ = a - ib. On change uniquement le signe de la partie imaginaire : conjugué(3 + 4i) = 3 - 4i."},
 
       {q:"Quelle est la formule d'Euler \\(e^{i\\theta}\\) ?", options:[
         "\\(\\cos\\theta + i\\sin\\theta\\)","\\(\\cos\\theta - i\\sin\\theta\\)","\\(\\sin\\theta + i\\cos\\theta\\)","\\(\\cos\\theta \\times \\sin\\theta\\)"
-      ], correctIndex:0, difficulty:"facile", explanation:"La célèbre identité d'Euler."},
+      ], correctIndex:0, difficulty:"facile", 
+      explanation:"La formule d'Euler établit que e^{iθ} = cos θ + i sin θ. C'est une relation fondamentale entre l'exponentielle complexe et les fonctions trigonométriques."},
 
-      {q:"Quelle est la partie réelle de \\(z = 5 + 2i\\) ?", options:["\\(5\\)","\\(2\\)","\\(7\\)","\\(3\\)"], correctIndex:0, difficulty:"facile", explanation:"La partie réelle est le coefficient sans \\(i\\)."},
+      {q:"Quelle est la partie réelle de \\(z = 5 + 2i\\) ?", options:["\\(5\\)","\\(2\\)","\\(7\\)","\\(3\\)"], correctIndex:0, difficulty:"facile", 
+      explanation:"Dans z = a + ib, la partie réelle est le coefficient a sans le i. Ici, partie réelle = 5."},
 
-      {q:"Quelle est la partie imaginaire de \\(z = -3 + 7i\\) ?", options:["\\(7\\)","\\(-3\\)","\\(7i\\)","\\(4\\)"], correctIndex:0, difficulty:"facile", explanation:"C'est le coefficient du terme en \\(i\\)."},
+      {q:"Quelle est la partie imaginaire de \\(z = -3 + 7i\\) ?", options:["\\(7\\)","\\(-3\\)","\\(7i\\)","\\(4\\)"], correctIndex:0, difficulty:"facile", 
+      explanation:"La partie imaginaire est le coefficient de i (sans le i lui-même). Ici, partie imaginaire = 7."},
 
-      {q:"Que vaut \\(i^4\\) ?", options:["\\(1\\)","\\(-1\\)","\\(i\\)","\\(-i\\)"], correctIndex:0, difficulty:"facile", explanation:"\\(i^4 = (i^2)^2 = 1\\)."},
-      {q:"Si \\(z = x + iy\\), que vaut \\(z + \\overline{z}\\) ?", options:["\\(2x\\)","\\(2iy\\)","\\(0\\)","\\(2(x+y)\\)"], correctIndex:0, difficulty:"facile", explanation:"Les parties imaginaires se compensent."},
-      {q:"Quelle est la forme exponentielle de \\(-1\\) ?", options:["\\(e^{i\\pi}\\)","\\(e^{-i\\pi}\\)","\\(e^{i\\pi/2}\\)","\\(e^{2i\\pi}\\)"], correctIndex:0, difficulty:"facile", explanation:"\\(-1 = e^{i\\pi}\\) (à une période près)."},
+      {q:"Que vaut \\(i^4\\) ?", options:["\\(1\\)","\\(-1\\)","\\(i\\)","\\(-i\\)"], correctIndex:0, difficulty:"facile", 
+      explanation:"i⁴ = (i²)² = (-1)² = 1. Les puissances de i sont périodiques de période 4 : i¹ = i, i² = -1, i³ = -i, i⁴ = 1."},
+      
+      {q:"Si \\(z = x + iy\\), que vaut \\(z + \\overline{z}\\) ?", options:["\\(2x\\)","\\(2iy\\)","\\(0\\)","\\(2(x+y)\\)"], correctIndex:0, difficulty:"facile", 
+      explanation:"z + z̄ = (x + iy) + (x - iy) = 2x. Les parties imaginaires s'annulent, on obtient deux fois la partie réelle."},
+      
+      {q:"Quelle est la forme exponentielle de \\(-1\\) ?", options:["\\(e^{i\\pi}\\)","\\(e^{-i\\pi}\\)","\\(e^{i\\pi/2}\\)","\\(e^{2i\\pi}\\)"], correctIndex:0, difficulty:"facile", 
+      explanation:"-1 = cos π + i sin π = e^{iπ} (à 2kπ près). C'est l'identité d'Euler célèbre : e^{iπ} + 1 = 0."},
 
       // MOYEN
-      {q:"Si \\(z = 3 + 4i\\), quel est le module \\(|z|\\) ?", options:["\\(5\\)","\\(7\\)","\\(\\sqrt{7}\\)","\\(25\\)"], correctIndex:0, difficulty:"moyen", explanation:"\\(|z|=\\sqrt{3^2+4^2}=5\\)."},
-      {q:"Que vaut \\(|z|^2\\) ?", options:["\\(z\\times\\overline{z}\\)","\\(z+\\overline{z}\\)","\\(z-\\overline{z}\\)","\\(z\\div\\overline{z}\\)"], correctIndex:0, difficulty:"moyen", explanation:"Par définition \\(|z|^2=z\\overline{z}\\)."},
-      {q:"Si \\(z_1=2+3i\\) et \\(z_2=1-i\\), que vaut \\(z_1+z_2\\) ?", options:["\\(3+2i\\)","\\(3+4i\\)","\\(1+2i\\)","\\(2+2i\\)"], correctIndex:0, difficulty:"moyen", explanation:"Addition terme à terme."},
+      {q:"Si \\(z = 3 + 4i\\), quel est le module \\(|z|\\) ?", options:["\\(5\\)","\\(7\\)","\\(\\sqrt{7}\\)","\\(25\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"|z| = √(a² + b²) = √(3² + 4²) = √(9 + 16) = √25 = 5. C'est la distance du point (3,4) à l'origine."},
+      
+      {q:"Que vaut \\(|z|^2\\) ?", options:["\\(z\\times\\overline{z}\\)","\\(z+\\overline{z}\\)","\\(z-\\overline{z}\\)","\\(z\\div\\overline{z}\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"|z|² = z × z̄. Pour z = a + ib, on a z × z̄ = (a + ib)(a - ib) = a² + b² = |z|²."},
+      
+      {q:"Si \\(z_1=2+3i\\) et \\(z_2=1-i\\), que vaut \\(z_1+z_2\\) ?", options:["\\(3+2i\\)","\\(3+4i\\)","\\(1+2i\\)","\\(2+2i\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"(2+3i) + (1-i) = (2+1) + (3-1)i = 3 + 2i. On additionne séparément les parties réelles et imaginaires."},
+      
       {q:"Que représente géométriquement \\(|z_A-z_B|\\) ?", options:[
         "La distance entre A et B","L'aire du triangle OAB","L'angle entre vecteurs","Le milieu de [AB]"
-      ], correctIndex:0, difficulty:"moyen", explanation:"C'est la distance entre A et B."},
+      ], correctIndex:0, difficulty:"moyen", 
+      explanation:"|z_A - z_B| représente la distance entre les points A et B d'affixes z_A et z_B. C'est l'analogue complexe de la distance euclidienne."},
+      
       {q:"Quelle propriété pour le conjugué d'un produit ?", options:[
         "\\(\\overline{z_1z_2}=\\overline{z_1}\\,\\overline{z_2}\\)","\\(\\overline{z_1z_2}=\\overline{z_1}+\\overline{z_2}\\)","\\(= -\\overline{z_1}\\,\\overline{z_2}\\)","\\(=\\overline{z_1}-\\overline{z_2}\\)"
-      ], correctIndex:0, difficulty:"moyen", explanation:"Le conjugué distribue sur le produit."},
+      ], correctIndex:0, difficulty:"moyen", 
+      explanation:"Le conjugué d'un produit est égal au produit des conjugués : z₁z₂̄ = z̄₁ × z̄₂. C'est une propriété importante de la conjugaison."},
+      
       {q:"Forme trigonométrique du nombre \\(i\\) ?", options:[
         "\\(\\cos(\\tfrac{\\pi}{2})+i\\sin(\\tfrac{\\pi}{2})\\)","\\(\\cos\\pi + i\\sin\\pi\\)","\\(\\cos0 + i\\sin0\\)","\\(\\cos\\tfrac{\\pi}{4}+i\\sin\\tfrac{\\pi}{4}\\)"
-      ], correctIndex:0, difficulty:"moyen", explanation:"\\(i\\) a argument \\(\\pi/2\\) et module 1."},
-      {q:"Que vaut \\((1+i)^2\\) ?", options:["\\(2i\\)","\\(2\\)","\\(1+2i\\)","\\(0\\)"], correctIndex:0, difficulty:"moyen", explanation:"Développer donne \\(2i\\)."},
+      ], correctIndex:0, difficulty:"moyen", 
+      explanation:"i = 0 + 1i. Son module est 1, son argument est π/2. Donc i = cos(π/2) + i sin(π/2)."},
+      
+      {q:"Que vaut \\((1+i)^2\\) ?", options:["\\(2i\\)","\\(2\\)","\\(1+2i\\)","\\(0\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"(1+i)² = 1² + 2×1×i + i² = 1 + 2i - 1 = 2i. On développe comme une identité remarquable."},
+      
       {q:"Si \\(|z|=1\\), que peut-on dire du point d'affixe \\(z\\) ?", options:[
         "M est sur le cercle unité","M est sur l'axe réel","M est sur l'axe imaginaire","M est à l'origine"
-      ], correctIndex:0, difficulty:"moyen", explanation:"Distance 1 à l'origine → cercle unité."},
-      {q:"Que vaut \\(i^{2025}\\) ?", options:["\\(i\\)","\\(-i\\)","\\(1\\)","\\(-1\\)"], correctIndex:0, difficulty:"moyen", explanation:"2025 ≡ 1 (mod 4) donc \\(i\\)."},
-      {q:"Pour \\(z=1+i\\sqrt{3}\\), quel est \\(\\arg(z)\\) ?", options:["\\(\\tfrac{\\pi}{3}\\)","\\(\\tfrac{\\pi}{6}\\)","\\(\\tfrac{\\pi}{4}\\)","\\(\\tfrac{2\\pi}{3}\\)"], correctIndex:0, difficulty:"moyen", explanation:"Tan = √3 → angle π/3."},
-      {q:"Combien de solutions pour \\(z^3=8\\) dans \\(\\mathbb{C}\\) ?", options:["\\(3\\)","\\(1\\)","\\(2\\)","\\(4\\)"], correctIndex:0, difficulty:"moyen", explanation:"Une équation de degré 3 a 3 racines complexes (avec multiplicité)."},
+      ], correctIndex:0, difficulty:"moyen", 
+      explanation:"|z| = 1 signifie que la distance à l'origine est 1. Donc le point M est sur le cercle de centre O et de rayon 1."},
+      
+      {q:"Que vaut \\(i^{2025}\\) ?", options:["\\(i\\)","\\(-i\\)","\\(1\\)","\\(-1\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"2025 ÷ 4 = 506 reste 1. Donc i²⁰²⁵ = i¹ = i. Les puissances de i sont périodiques de période 4."},
+      
+      {q:"Pour \\(z=1+i\\sqrt{3}\\), quel est \\(\\arg(z)\\) ?", options:["\\(\\tfrac{\\pi}{3}\\)","\\(\\tfrac{\\pi}{6}\\)","\\(\\tfrac{\\pi}{4}\\)","\\(\\tfrac{2\\pi}{3}\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"z = 1 + i√3. Module = √(1² + (√3)²) = 2. cos θ = 1/2, sin θ = √3/2 ⇒ θ = π/3."},
+      
+      {q:"Combien de solutions pour \\(z^3=8\\) dans \\(\\mathbb{C}\\) ?", options:["\\(3\\)","\\(1\\)","\\(2\\)","\\(4\\)"], correctIndex:0, difficulty:"moyen", 
+      explanation:"Un polynôme de degré n a exactement n racines complexes (comptées avec multiplicité). Ici, degré 3 ⇒ 3 solutions."},
+      
       {q:"Si \\(|z-2i|=3\\), l'ensemble des z est :", options:[
         "Un cercle de centre \\((0,2)\\) et rayon 3",
         "Un cercle de centre \\((2,0)\\) et rayon 3",
         "Une droite","Un segment"
-      ], correctIndex:0, difficulty:"moyen", explanation:"Distance fixe à 2i → cercle centré en (0,2)."},
+      ], correctIndex:0, difficulty:"moyen", 
+      explanation:"|z - 2i| = 3 signifie distance(z, 2i) = 3. 2i correspond au point (0,2). Donc cercle de centre (0,2), rayon 3."},
+      
       // DIFFICILE
       {q:"Si \\(z_1=r_1e^{i\\theta_1}\\) et \\(z_2=r_2e^{i\\theta_2}\\), que vaut \\(z_1\\times z_2\\) ?", options:[
         "\\(r_1r_2 e^{i(\\theta_1+\\theta_2)}\\)","\\(r_1r_2 e^{i(\\theta_1-\\theta_2)}\\)","\\((r_1+r_2) e^{i(\\theta_1+\\theta_2)}\\)","\\(r_1r_2 e^{i\\theta_1\\theta_2}\\)"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Modules multiplient, arguments s'additionnent."},
-      {q:"Combien de racines cubiques possède un nombre complexe non nul ?", options:["\\(3\\)","\\(2\\)","\\(1\\)","Infini"], correctIndex:0, difficulty:"difficile", explanation:"Un nombre non nul a exactement n racines n-ièmes."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"En forme exponentielle, on multiplie les modules et on additionne les arguments : (r₁e^{iθ₁}) × (r₂e^{iθ₂}) = r₁r₂e^{i(θ₁+θ₂)}."},
+      
+      {q:"Combien de racines cubiques possède un nombre complexe non nul ?", options:["\\(3\\)","\\(2\\)","\\(1\\)","Infini"], correctIndex:0, difficulty:"difficile", 
+      explanation:"Tout nombre complexe non nul a exactement n racines n-ièmes distinctes. Pour n=3, il y a 3 racines cubiques."},
+      
       {q:"Si A,B,C sont alignés, que vaut \\(\\dfrac{z_C-z_A}{z_B-z_A}\\) ?", options:[
         "C'est un nombre réel","C'est un imaginaire pur","Son module vaut 1","Son argument vaut \\(\\tfrac{\\pi}{2}\\)"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Rapport réel ⇔ alignement."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"(z_C - z_A)/(z_B - z_A) est réel si et seulement si les points A, B, C sont alignés. C'est le critère d'alignement."},
+      
       {q:"Que représente \\(\\arg(z_A-z_B)\\) géométriquement ?", options:[
         "L'angle (Ox, \\overrightarrow{AB})","La longueur AB","L'aire du triangle OAB","Le périmètre"
-      ], correctIndex:0, difficulty:"difficile", explanation:"C'est l'angle entre l'axe réel et le vecteur AB."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"arg(z_A - z_B) est l'angle que fait le vecteur AB avec l'axe des réels (l'axe Ox)."},
+      
       {q:"Quelle est la formule de Moivre ?", options:[
         "\\((\\cos\\theta+i\\sin\\theta)^n=\\cos(n\\theta)+i\\sin(n\\theta)\\)",
         "\\((\\cos\\theta+i\\sin\\theta)^n=\\cos\\theta^n+i\\sin\\theta^n\\)",
         "\\((\\cos\\theta+i\\sin\\theta)^n=n\\cos\\theta+ni\\sin\\theta\\)",
         "\\((\\cos\\theta+i\\sin\\theta)^n=\\cos(\\theta^n)+i\\sin(\\theta^n)\\)"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Formule de Moivre classique."},
-      {q:"Pour \\(z^2+z+1=0\\), que vaut \\(\\Delta\\) ?", options:["\\(-3\\)","\\(3\\)","\\(1\\)","\\(0\\)"], correctIndex:0, difficulty:"difficile", explanation:"\\(\\Delta=1-4=-3\\)."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"La formule de Moivre : (cos θ + i sin θ)ⁿ = cos(nθ) + i sin(nθ). C'est une conséquence de la forme exponentielle."},
+      
+      {q:"Pour \\(z^2+z+1=0\\), que vaut \\(\\Delta\\) ?", options:["\\(-3\\)","\\(3\\)","\\(1\\)","\\(0\\)"], correctIndex:0, difficulty:"difficile", 
+      explanation:"Δ = b² - 4ac = 1² - 4×1×1 = 1 - 4 = -3. Les solutions sont (-1 ± i√3)/2."},
+      
       {q:"Une similitude directe conserve :", options:[
         "Les angles","Les aires","Les longueurs exactes","L'orientation inverse"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Elle conserve les angles et l'orientation."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"Une similitude directe conserve les angles (c'est une transformation conforme) et l'orientation. Les longueurs sont multipliées par un rapport k."},
+      
       {q:"Comment linéariser \\(\\cos^3(x)\\) ?", options:[
         "Avec Euler et le binôme","En dérivant","En intégrant","Avec la trigonométrie seule"
-      ], correctIndex:0, difficulty:"difficile", explanation:"On utilise l'exponentielle complexe (formule d'Euler)."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"Pour linéariser cos³(x), on utilise la formule d'Euler : cos x = (e^{ix} + e^{-ix})/2, puis on développe avec le binôme."},
+      
       {q:"Multiplier par \\(e^{i\\tfrac{\\pi}{2}}\\) correspond à :", options:[
         "Une rotation de \\(\\tfrac{\\pi}{2}\\)","Une translation","Une homothétie","Une symétrie"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Multiplication par un nombre unitaire = rotation."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"Multiplier par e^{iπ/2} = i correspond à une rotation de +90° (π/2 radians) autour de l'origine."},
+      
       {q:"Factorisation de \\(z^2-1\\) dans \\(\\mathbb{C}\\) :", options:[
         "\\((z-1)(z+1)\\)","\\((z-i)(z+i)\\)","\\((z-1)^2\\)","\\(z(z-1)\\)"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Identité algébrique directe."},
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"z² - 1 = (z-1)(z+1). Cette factorisation est valable dans ℂ comme dans ℝ. (z-i)(z+i) = z²+1."},
+      
       {q:"Les racines 4-ièmes de 16 sont :", options:[
         "\\(2,-2,2i,-2i\\)","\\(4,-4,4i,-4i\\)","\\(1,i,-1,-i\\)","\\(16,16i,-16,-16i\\)"
-      ], correctIndex:0, difficulty:"difficile", explanation:"Racines: \\(2e^{ik\\pi/2}\\) pour k=0..3."}
+      ], correctIndex:0, difficulty:"difficile", 
+      explanation:"Les racines 4-ièmes de 16 sont les solutions de z⁴ = 16. Elles sont : 2e^{ikπ/2} = 2, 2i, -2, -2i."}
     ];
 
     /* ---------------------------
-       Utilitaires : mélanger tableau et mélanger options en conservant l'indice correct
+       Utilitaires
        --------------------------- */
     function shuffle(array){
       const a = array.slice();
@@ -470,7 +794,6 @@
       return a;
     }
 
-    // Retourne {options: [...], newCorrectIndex}
     function shuffleOptions(options, correctIndex){
       const arr = options.map((text, idx) => ({text, idx}));
       const shuffled = shuffle(arr);
@@ -485,7 +808,7 @@
     let selectedQuestions = [];
     let current = 0;
     let score = 0;
-    let answers = []; // store chosen index per question (or null)
+    let answers = [];
     let startTime = null;
     let timerInterval = null;
     let totalQuestions = 10;
@@ -508,17 +831,112 @@
     const resultDetails = document.getElementById('resultDetails');
     const downloadLink = document.getElementById('downloadLink');
     const shareBtn = document.getElementById('shareBtn');
+    const backToHomeBtn = document.getElementById('backToHomeBtn');
+    const correctionBox = document.getElementById('correctionBox');
+    const correctionOverlay = document.getElementById('correctionOverlay');
+    const closeCorrectionBtn = document.getElementById('closeCorrectionBtn');
+    const correctionContent = document.getElementById('correctionContent');
 
-    // Préparer le lien de téléchargement (download du fichier HTML)
-    (function prepareDownload(){
-      // Serialize the current document HTML to download; user may want to save exact file.
+    /* ---------------------------
+       Gestion de la vue
+       --------------------------- */
+    function toggleQuizView(showQuiz) {
+      const panelLeft = document.querySelector('.panel-left');
+      const panelRight = document.querySelector('.panel-right');
+      const card = document.querySelector('.card');
+      
+      if (showQuiz) {
+        // Cacher le panneau gauche
+        panelLeft.style.display = 'none';
+        panelLeft.style.visibility = 'hidden';
+        panelRight.style.flex = '1';
+        
+        // Adapter la mise en page
+        card.style.gridTemplateColumns = '1fr';
+        card.style.transition = 'all 0.3s ease';
+        
+        // Forcer le reflow pour les animations
+        void card.offsetWidth;
+        
+        // Afficher le bouton retour
+        backToHomeBtn.style.display = 'block';
+        
+      } else {
+        // Montrer le panneau gauche
+        panelLeft.style.display = 'flex';
+        panelLeft.style.visibility = 'visible';
+        backToHomeBtn.style.display = 'none';
+        
+        // Revenir à la mise en page d'origine
+        if (window.innerWidth > 880) {
+          card.style.gridTemplateColumns = '380px 1fr';
+        } else {
+          card.style.gridTemplateColumns = '1fr';
+        }
+        
+        // Réorganiser l'ordre pour mobile
+        if (window.innerWidth <= 880) {
+          panelLeft.style.order = '2';
+          panelRight.style.order = '1';
+        }
+      }
+    }
+
+    // Initialiser avec le panneau gauche visible
+    toggleQuizView(false);
+
+    /* ---------------------------
+       Gestion de la correction
+       --------------------------- */
+    function showCorrection() {
+      if (!selectedQuestions.length || current >= selectedQuestions.length) return;
+      
+      const item = selectedQuestions[current];
+      let content = `<p><strong>Explication :</strong></p>`;
+      content += `<p>${item.explanation}</p>`;
+      
+      // Ajouter des détails mathématiques formatés
+      if (item.q.includes("forme algébrique")) {
+        content += `<div class="correction-math">z = a + ib (avec a, b ∈ ℝ)</div>`;
+      } else if (item.q.includes("i²")) {
+        content += `<div class="correction-math">i² = -1</div>`;
+      } else if (item.q.includes("conjugué")) {
+        content += `<div class="correction-math">Si z = a + ib, alors z̄ = a - ib</div>`;
+      } else if (item.q.includes("module")) {
+        content += `<div class="correction-math">|z| = √(a² + b²)</div>`;
+      } else if (item.q.includes("Euler")) {
+        content += `<div class="correction-math">e^{iθ} = cos θ + i sin θ</div>`;
+      } else if (item.q.includes("Moivre")) {
+        content += `<div class="correction-math">(cos θ + i sin θ)ⁿ = cos(nθ) + i sin(nθ)</div>`;
+      }
+      
+      correctionContent.innerHTML = content;
+      correctionBox.classList.add('show');
+      correctionOverlay.classList.add('show');
+    }
+
+    function hideCorrection() {
+      correctionBox.classList.remove('show');
+      correctionOverlay.classList.remove('show');
+    }
+
+    closeCorrectionBtn.addEventListener('click', hideCorrection);
+    correctionOverlay.addEventListener('click', hideCorrection);
+
+    /* ---------------------------
+       Préparer le téléchargement
+       --------------------------- */
+    function prepareDownload(){
       const html = `<!doctype html>\n` + document.documentElement.outerHTML;
       const blob = new Blob([html], {type:'text/html;charset=utf-8'});
       const url = URL.createObjectURL(blob);
       downloadLink.href = url;
-    })();
+    }
+    prepareDownload();
 
-    // Partage natif (Web Share API)
+    /* ---------------------------
+       Partage natif
+       --------------------------- */
     shareBtn.addEventListener('click', async ()=>{
       if(navigator.share){
         try{
@@ -537,7 +955,9 @@
       }
     });
 
-    // Choix de la difficulté (nombre de questions)
+    /* ---------------------------
+       Choix de la difficulté
+       --------------------------- */
     difficultyEls.forEach(el=>{
       el.addEventListener('click', ()=>{
         difficultyEls.forEach(x=>x.classList.remove('selected'));
@@ -547,15 +967,37 @@
     });
 
     /* ---------------------------
+       Bouton retour accueil
+       --------------------------- */
+    backToHomeBtn.addEventListener('click', () => {
+      toggleQuizView(false);
+      selectedQuestions = [];
+      current = 0;
+      score = 0;
+      answers = [];
+      stopTimer();
+      timerEl.textContent = '⏱️ 00:00';
+      progressFill.style.width = '0%';
+      resultsBox.classList.remove('show');
+      questionTextEl.textContent = "Choisissez un nombre de questions puis appuyez sur 'Commencer le Quiz'";
+      optionsContainer.innerHTML = '';
+      nextBtn.textContent = 'Suivant';
+      prevBtn.disabled = true;
+      hideCorrection();
+    });
+
+    /* ---------------------------
        Démarrer le quiz
        --------------------------- */
     startBtn.addEventListener('click', startQuiz);
 
     function startQuiz(){
-      // Mélanger la base, prendre totalQuestions éléments (si base trop courte, prendre tout)
+      // Masquer le panneau d'accueil
+      toggleQuizView(true);
+      
+      // Mélanger la base, prendre totalQuestions éléments
       const pool = shuffle(questionDatabase);
       selectedQuestions = pool.slice(0, Math.min(totalQuestions, pool.length)).map(q=>{
-        // On clone et on mélange les options : crucial pour que la bonne réponse ne soit pas toujours la 1ère
         const mixed = shuffleOptions(q.options, q.correctIndex);
         return {
           q: q.q,
@@ -573,6 +1015,7 @@
       startTime = Date.now();
       startTimer();
       resultsBox.classList.remove('show');
+      hideCorrection();
       renderQuestion();
     }
 
@@ -605,7 +1048,7 @@
       qNumberEl.textContent = `Question ${current+1} / ${selectedQuestions.length}`;
       qBadgeEl.textContent = item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1);
 
-      // Afficher question (LaTeX entre \( \) est laissé; MathJax s'occupera si chargé)
+      // Afficher question
       questionTextEl.innerHTML = item.q;
 
       // Options
@@ -660,11 +1103,18 @@
        Navigation
        --------------------------- */
     prevBtn.addEventListener('click', ()=>{
-      if(current>0){ current--; renderQuestion(); }
+      if(current>0){ 
+        current--; 
+        renderQuestion();
+        hideCorrection();
+      }
     });
+    
     nextBtn.addEventListener('click', ()=>{
       if(current < selectedQuestions.length - 1){
-        current++; renderQuestion();
+        current++; 
+        renderQuestion();
+        hideCorrection();
       }else{
         // Terminer et afficher résultat
         finishQuiz();
@@ -672,13 +1122,7 @@
     });
 
     hintBtn.addEventListener('click', ()=>{
-      // Affiche la correction (explication) pour la question courante
-      const item = selectedQuestions[current];
-      const msg = item.explanation ? item.explanation : 'Pas d\'explication fournie.';
-      // Afficher en bas (alert simple)
-      const w = window.open('', '_blank', 'toolbar=0,location=0,menubar=0');
-      w.document.write(`<p style="font-family:Arial;padding:20px">Explication : <strong>${msg}</strong></p>`);
-      w.document.close();
+      showCorrection();
     });
 
     /* ---------------------------
@@ -710,7 +1154,9 @@
             Votre réponse : ${chosen===null ? '<em>non répondue</em>' : String.fromCharCode(65+chosen)}
             &nbsp;•&nbsp; Bonne : ${String.fromCharCode(65+it.correctIndex)}
           </div>
-          <div style="margin-top:6px;color:#374151">${it.explanation ?? ''}</div>
+          <div style="margin-top:6px;color:#374151;font-size:14px;background:#f8fafc;padding:8px;border-radius:6px">
+            <strong>Explication :</strong> ${it.explanation}
+          </div>
         </div>`;
       });
       details += `</div>`;
@@ -718,7 +1164,7 @@
 
       resultsBox.classList.add('show');
 
-      // Afficher message selon performance (toast simple)
+      // Afficher message selon performance
       if(pct >= 90) alert('🏆 Excellent !');
       else if(pct >= 70) alert('👏 Très bien !');
       else if(pct >= 50) alert('👍 Bien, continuez.');
@@ -728,21 +1174,31 @@
       resultsBox.scrollIntoView({behavior:'smooth'});
     }
 
-    // Au chargement, afficher small helpers
-    document.addEventListener('DOMContentLoaded', ()=>{
-      // nothing for now
-    });
+    // Gestion du clavier virtuel sur mobile
+    document.addEventListener('touchstart', function(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
 
-    // Pour s'assurer que le téléchargement propose le HTML complet (mise à jour à la demande)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
+    // Mettre à jour le lien de téléchargement
     downloadLink.addEventListener('click', (e)=>{
-      // Recréer un blob à la volée (pour contenir l'état actuel)
-      const html = '<!doctype html>\\n' + document.documentElement.outerHTML;
+      const html = '<!doctype html>\n' + document.documentElement.outerHTML;
       const blob = new Blob([html], {type:'text/html'});
       const url = URL.createObjectURL(blob);
       downloadLink.href = url;
     });
 
-    // Accessibility: keyboard navigation pour les options
+    // Accessibilité: navigation clavier pour les options
     optionsContainer.addEventListener('keydown', (ev)=>{
       if(ev.key === 'Enter' || ev.key === ' '){
         const el = document.activeElement;
@@ -751,6 +1207,12 @@
           chooseOption(idx);
         }
       }
+    });
+
+    // Initialiser l'affichage
+    document.addEventListener('DOMContentLoaded', ()=>{
+      questionTextEl.textContent = "Choisissez un nombre de questions puis appuyez sur 'Commencer le Quiz'";
+      optionsContainer.innerHTML = '';
     });
   </script>
 </body>
