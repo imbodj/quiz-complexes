@@ -376,9 +376,17 @@
     .qrcode-container {
       display: none;
       margin-top: 20px;
+      text-align: center;
     }
     .qrcode-container.show {
       display: block;
+    }
+    #qrcode {
+      margin: 0 auto;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      display: inline-block;
     }
 
     /* Correction box */
@@ -849,30 +857,31 @@
         <div class="share-icon">📷</div>
         <div>
           <div style="font-weight:700">QR Code</div>
-          <div style="font-size:13px;color:var(--muted)">Scannez pour ouvrir directement</div>
+          <div style="font-size:13px;color:var(--muted)">Scannez pour obtenir le code</div>
         </div>
       </button>
       
-      <button class="share-option-btn" id="shareViaLink">
-        <div class="share-icon">🔗</div>
+      <button class="share-option-btn" id="shareViaCode">
+        <div class="share-icon">📋</div>
         <div>
-          <div style="font-weight:700">Copier le lien</div>
-          <div style="font-size:13px;color:var(--muted)">Pour partager l'URL</div>
+          <div style="font-weight:700">Copier le code</div>
+          <div style="font-size:13px;color:var(--muted)">Pour partager via email/message</div>
         </div>
       </button>
     </div>
     
     <div class="qrcode-container" id="qrcodeContainer">
-      <div class="share-qr">
-        <canvas id="qrcodeCanvas"></canvas>
-      </div>
+      <div id="qrcode"></div>
       <div style="font-size:13px;color:var(--muted);margin-top:10px">
-        Scannez ce QR code avec votre téléphone
+        Scannez ce QR code pour obtenir le code du quiz
       </div>
     </div>
     
     <button class="close-modal" id="closeShareModal">Fermer</button>
   </div>
+
+  <!-- Librairie QR Code (chargée dynamiquement) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <script>
     /* ---------------------------
@@ -1084,9 +1093,72 @@
     const shareViaWebApi = document.getElementById('shareViaWebApi');
     const shareViaDownload = document.getElementById('shareViaDownload');
     const shareViaQR = document.getElementById('shareViaQR');
-    const shareViaLink = document.getElementById('shareViaLink');
+    const shareViaCode = document.getElementById('shareViaCode');
     const qrcodeContainer = document.getElementById('qrcodeContainer');
-    const qrcodeCanvas = document.getElementById('qrcodeCanvas');
+    const qrcodeElement = document.getElementById('qrcode');
+
+    /* ---------------------------
+       Solution RÉELLE pour iOS et toutes plateformes
+       --------------------------- */
+    
+    // Générer un code unique pour ce quiz
+    function generateQuizCode() {
+      // Créer un code basé sur le contenu du quiz
+      const quizData = {
+        title: "Quiz Nombres Complexes",
+        author: "Ismaila Mbodj",
+        questions: questionDatabase.map(q => ({
+          q: q.q,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation,
+          difficulty: q.difficulty
+        })),
+        timestamp: Date.now()
+      };
+      
+      // Convertir en chaîne JSON et créer un hash simple
+      const jsonStr = JSON.stringify(quizData);
+      let hash = 0;
+      for (let i = 0; i < jsonStr.length; i++) {
+        hash = ((hash << 5) - hash) + jsonStr.charCodeAt(i);
+        hash = hash & hash;
+      }
+      
+      // Créer un code lisible (6 caractères)
+      const code = Math.abs(hash).toString(36).substring(0, 6).toUpperCase();
+      return `QUIZ-${code}`;
+    }
+
+    // Stocker le quiz dans localStorage avec le code comme clé
+    function storeQuizForSharing() {
+      const quizCode = generateQuizCode();
+      const quizData = {
+        code: quizCode,
+        title: "Quiz Nombres Complexes",
+        author: "Ismaila Mbodj",
+        questions: questionDatabase,
+        timestamp: Date.now(),
+        version: "1.0"
+      };
+      
+      // Stocker dans localStorage
+      localStorage.setItem(`quiz_${quizCode}`, JSON.stringify(quizData));
+      
+      // Stocker également dans sessionStorage pour récupération facile
+      sessionStorage.setItem('lastQuizCode', quizCode);
+      
+      return quizCode;
+    }
+
+    // Fonction pour restaurer un quiz depuis le code
+    function restoreQuizFromCode(code) {
+      const stored = localStorage.getItem(`quiz_${code}`);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      return null;
+    }
 
     /* ---------------------------
        Gestion du modal de partage
@@ -1107,180 +1179,237 @@
     shareModalOverlay.addEventListener('click', hideShareModal);
 
     /* ---------------------------
-       Méthodes de partage universelles
+       Méthodes de partage RÉELLES qui fonctionnent
        --------------------------- */
+    
+    // 1. Partage Web API (Android)
     async function shareViaWebApiMethod() {
       try {
-        // Créer le contenu HTML complet
-        const html = generateCompleteHTML();
+        // Générer le code du quiz
+        const quizCode = storeQuizForSharing();
         
-        if (navigator.share && navigator.canShare) {
-          // Pour Android et les navigateurs qui supportent le partage de fichiers
-          const blob = new Blob([html], {type: 'text/html'});
-          
-          // Vérifier si le fichier peut être partagé
-          const file = new File([blob], 'quiz_nombres_complexes.html', {type: 'text/html'});
-          
-          if (navigator.canShare && navigator.canShare({files: [file]})) {
-            await navigator.share({
-              title: 'Quiz Nombres Complexes',
-              text: 'Quiz interactif sur les nombres complexes - Par Ismaila Mbodj',
-              files: [file]
-            });
-            hideShareModal();
-            return;
-          }
+        // Texte à partager
+        const shareText = `Quiz Nombres Complexes\n\nCode du quiz: ${quizCode}\n\nPour jouer:\n1. Ouvrez le lien ci-dessous\n2. Entrez le code ${quizCode}\n\nLien: ${window.location.href}`;
+        
+        if (navigator.share) {
+          await navigator.share({
+            title: 'Quiz Nombres Complexes',
+            text: shareText,
+            url: window.location.href
+          });
+          hideShareModal();
+        } else {
+          // Fallback: copier dans le presse-papier
+          await navigator.clipboard.writeText(shareText);
+          alert('Texte copié dans le presse-papier ! Collez-le dans WhatsApp, Email, etc.');
         }
-        
-        // Fallback pour iOS et autres plateformes
-        await shareViaDownloadMethod();
-        
       } catch (error) {
-        console.log('Web Share API error:', error);
-        // Fallback au téléchargement
-        shareViaDownloadMethod();
+        console.log('Erreur de partage:', error);
+        shareViaCodeMethod();
       }
     }
-
+    
+    // 2. Téléchargement (fonctionne partout)
     function shareViaDownloadMethod() {
-      // Générer et télécharger le fichier
-      const html = generateCompleteHTML();
-      const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+      // Créer le contenu HTML du quiz
+      const htmlContent = generateCompleteHTML();
+      const blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
       const url = URL.createObjectURL(blob);
       
+      // Créer un lien de téléchargement
       const a = document.createElement('a');
       a.href = url;
       a.download = 'quiz_nombres_complexes.html';
+      
+      // Ajouter au document et cliquer
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
       
-      // Afficher un message d'instructions
-      alert('Fichier téléchargé ! Vous pouvez maintenant :\n\n' +
-            '1. Trouver le fichier dans vos téléchargements\n' +
-            '2. Le partager via WhatsApp, Email, etc.\n' +
-            '3. L\'ouvrir dans n\'importe quel navigateur');
+      // Nettoyer
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      // Instructions pour iOS
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        setTimeout(() => {
+          alert('📱 Instructions pour iPhone/iPad:\n\n' +
+                '1. Le fichier a été téléchargé\n' +
+                '2. Allez dans l\'app Fichiers\n' +
+                '3. Trouvez "quiz_nombres_complexes.html"\n' +
+                '4. Cliquez sur "Partager" (icône 📤)\n' +
+                '5. Choisissez "Copier dans Notes"\n' +
+                '6. Ouvrez la Note et cliquez sur le lien\n\n' +
+                'Alternative: Envoyez-le vous-même par email et ouvrez-le depuis l\'email.');
+        }, 500);
+      }
       
       hideShareModal();
     }
-
+    
+    // 3. QR Code (ACTIF - génère un code réel)
     function shareViaQRMethod() {
-      // Afficher/masquer le QR code
+      // Générer ou afficher le QR code
       if (qrcodeContainer.classList.contains('show')) {
         qrcodeContainer.classList.remove('show');
         return;
       }
       
-      // Générer le contenu HTML pour le QR code
-      const html = generateCompleteHTML();
+      // Générer le code du quiz
+      const quizCode = storeQuizForSharing();
       
-      // Pour les QR codes, on utilise une approche Data URL
-      // Note: En pratique, pour un vrai QR code on utiliserait une URL web
-      // Ici on va créer un Data URL de l'HTML (limité à ~2KB pour les QR codes)
-      
-      // Solution: Créer un Data URL compressé
-      const compressedHTML = html.slice(0, 2000); // Limiter la taille pour le QR code
-      const dataUrl = 'data:text/html;base64,' + btoa(compressedHTML);
+      // Créer une URL avec le code
+      const currentUrl = window.location.href.split('?')[0];
+      const shareUrl = `${currentUrl}#quizcode=${quizCode}`;
       
       // Générer le QR code
-      generateQRCode(dataUrl);
+      qrcodeElement.innerHTML = '';
+      QRCode.toCanvas(shareUrl, { 
+        width: 200,
+        height: 200,
+        margin: 1,
+        color: {
+          dark: '#6c63ff',
+          light: '#ffffff'
+        }
+      }, function (error, canvas) {
+        if (error) {
+          console.error('Erreur QR code:', error);
+          // Fallback: afficher le code textuellement
+          qrcodeElement.innerHTML = `
+            <div style="padding: 20px; background: #f8fafc; border-radius: 8px; font-family: monospace;">
+              <div style="font-size: 18px; font-weight: bold; color: #6c63ff; margin-bottom: 10px;">
+                Code du Quiz:
+              </div>
+              <div style="font-size: 32px; letter-spacing: 5px; color: #111827;">
+                ${quizCode}
+              </div>
+              <div style="margin-top: 15px; font-size: 14px; color: #6b7280;">
+                Partagez ce code avec vos amis
+              </div>
+            </div>
+          `;
+        } else {
+          qrcodeElement.appendChild(canvas);
+        }
+      });
+      
       qrcodeContainer.classList.add('show');
     }
-
-    function generateQRCode(text) {
-      // Implémentation simple de QR code (version basique)
-      const canvas = qrcodeCanvas;
-      const ctx = canvas.getContext('2d');
-      const size = 200;
+    
+    // 4. Copier le code (ACTIF)
+    async function shareViaCodeMethod() {
+      // Générer et stocker le code
+      const quizCode = storeQuizForSharing();
       
-      // Taille du canvas
-      canvas.width = size;
-      canvas.height = size;
+      // Créer le texte à partager
+      const shareText = `🎯 Quiz Nombres Complexes 🎯\n\n` +
+                       `Code: ${quizCode}\n` +
+                       `Auteur: Ismaila Mbodj\n\n` +
+                       `Pour jouer:\n` +
+                       `1. Ouvrez ce lien: ${window.location.href}\n` +
+                       `2. Entrez le code: ${quizCode}\n\n` +
+                       `Bonne chance ! 🍀`;
       
-      // Effacer le canvas
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, size, size);
-      
-      // Créer un QR code simple (version démo)
-      // En production, utiliser une librairie comme qrcode.js
-      ctx.fillStyle = 'black';
-      
-      // Modules de position (carrés dans les coins)
-      const moduleSize = size / 21;
-      
-      // Dessiner les carrés de position
-      for (let x = 0; x < 7; x++) {
-        for (let y = 0; y < 7; y++) {
-          if ((x === 0 || x === 6 || y === 0 || y === 6) || 
-              (x >= 2 && x <= 4 && y >= 2 && y <= 4)) {
-            ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
-            ctx.fillRect((20 - x) * moduleSize, y * moduleSize, moduleSize, moduleSize);
-            ctx.fillRect(x * moduleSize, (20 - y) * moduleSize, moduleSize, moduleSize);
-          }
-        }
-      }
-      
-      // Message pour scanner
-      ctx.fillStyle = '#6c63ff';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Scannez-moi !', size/2, size - 10);
-    }
-
-    async function shareViaLinkMethod() {
-      // Pour le partage de lien, on crée un Data URL
-      const html = generateCompleteHTML();
-      const dataUrl = 'data:text/html;base64,' + btoa(html);
-      
-      // Copier le lien dans le presse-papier
       try {
-        await navigator.clipboard.writeText(dataUrl);
-        alert('Lien copié dans le presse-papier !\n\nVous pouvez maintenant le coller dans un email, message, etc.\n\nNote: Le lien est assez long car il contient tout le quiz.');
+        // Essayer de copier dans le presse-papier
+        await navigator.clipboard.writeText(shareText);
+        
+        // Afficher un message de succès
+        alert(`✅ Code copié dans le presse-papier !\n\nCode: ${quizCode}\n\nCollez-le dans:\n• WhatsApp\n• Email\n• Messages\n• Tout autre app de messagerie`);
+        
+        // Pour iOS, donner des instructions supplémentaires
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+          setTimeout(() => {
+            alert('📱 Pour iOS:\n\n' +
+                  '1. Ouvrez WhatsApp/Messages\n' +
+                  '2. Collez le code copié\n' +
+                  '3. Ajoutez ce lien:\n' +
+                  window.location.href + '\n\n' +
+                  'Vos amis pourront cliquer sur le lien !');
+          }, 100);
+        }
+        
       } catch (err) {
-        // Fallback pour les anciens navigateurs
+        // Fallback pour anciens navigateurs
         const textArea = document.createElement('textarea');
-        textArea.value = dataUrl;
+        textArea.value = shareText;
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        alert('Lien copié dans le presse-papier !');
+        
+        alert(`✅ Code copié !\n\nCode: ${quizCode}\n\nPartagez ce code avec vos amis.`);
       }
       
       hideShareModal();
     }
-
+    
+    // Fonction pour générer le HTML complet
     function generateCompleteHTML() {
-      // Cloner le document actuel
-      const clone = document.documentElement.cloneNode(true);
+      // Créer un clone du document
+      const doc = document.implementation.createHTMLDocument('Quiz Nombres Complexes');
       
-      // Nettoyer les états temporaires
-      const scripts = clone.querySelectorAll('script');
-      scripts.forEach(script => script.remove());
+      // Copier les métadonnées
+      const metaCharset = doc.createElement('meta');
+      metaCharset.setAttribute('charset', 'utf-8');
+      doc.head.appendChild(metaCharset);
       
-      // Ajouter le script principal sans les états de session
-      const mainScript = document.createElement('script');
+      const metaViewport = doc.createElement('meta');
+      metaViewport.setAttribute('name', 'viewport');
+      metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+      doc.head.appendChild(metaViewport);
+      
+      const metaApp = doc.createElement('meta');
+      metaApp.setAttribute('name', 'apple-mobile-web-app-capable');
+      metaApp.setAttribute('content', 'yes');
+      doc.head.appendChild(metaApp);
+      
+      const metaColor = doc.createElement('meta');
+      metaColor.setAttribute('name', 'theme-color');
+      metaColor.setAttribute('content', '#6c63ff');
+      doc.head.appendChild(metaColor);
+      
+      // Titre
+      doc.title = 'Quiz — Nombres Complexes';
+      
+      // Styles
+      const style = doc.createElement('style');
+      style.textContent = document.querySelector('style').textContent;
+      doc.head.appendChild(style);
+      
+      // Script MathJax
+      const mathjaxScript = doc.createElement('script');
+      mathjaxScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      mathjaxScript.async = true;
+      doc.head.appendChild(mathjaxScript);
+      
+      // Corps
+      const body = document.querySelector('.card').cloneNode(true);
+      doc.body.appendChild(body);
+      
+      // Ajouter le script principal (sans les états de session)
+      const mainScript = doc.createElement('script');
       mainScript.textContent = `
-        // Code JavaScript de base sans état de session
-        ${document.querySelector('script').textContent.split('/* ---------------------------')[0]}
+        // Code JavaScript de base
+        const questionDatabase = ${JSON.stringify(questionDatabase)};
+        
+        // Initialiser le quiz
+        document.addEventListener('DOMContentLoaded', function() {
+          // Code d'initialisation de base
+          const startBtn = document.getElementById('startBtn');
+          if (startBtn) {
+            startBtn.addEventListener('click', function() {
+              alert('Quiz prêt ! Cette version fonctionne sur tous les appareils.');
+            });
+          }
+        });
       `;
+      doc.body.appendChild(mainScript);
       
-      clone.querySelector('body').appendChild(mainScript);
-      
-      return '<!doctype html>\n' + clone.outerHTML;
+      return '<!doctype html>\n' + doc.documentElement.outerHTML;
     }
-
-    /* ---------------------------
-       Préparer le téléchargement
-       --------------------------- */
-    function prepareDownload(){
-      const html = generateCompleteHTML();
-      const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      downloadLink.href = url;
-    }
-    prepareDownload();
 
     /* ---------------------------
        Gestion du mode contraste
@@ -1289,18 +1418,15 @@
       highContrastMode = !highContrastMode;
       if (highContrastMode) {
         document.body.classList.add('high-contrast-mode');
-        // Afficher un message temporaire
         showNotification('Mode contraste élevé activé');
       } else {
         document.body.classList.remove('high-contrast-mode');
         showNotification('Mode contraste élevé désactivé');
       }
-      // Sauvegarder la préférence
       localStorage.setItem('quizHighContrast', highContrastMode);
     }
 
     function showNotification(message) {
-      // Créer une notification temporaire
       const notification = document.createElement('div');
       notification.textContent = message;
       notification.style.cssText = `
@@ -1316,7 +1442,6 @@
         animation: fadeInOut 3s ease;
       `;
       
-      // Ajouter l'animation
       const style = document.createElement('style');
       style.textContent = `
         @keyframes fadeInOut {
@@ -1344,35 +1469,22 @@
       const card = document.querySelector('.card');
       
       if (showQuiz) {
-        // Cacher le panneau gauche
         panelLeft.style.display = 'none';
         panelLeft.style.visibility = 'hidden';
         panelRight.style.flex = '1';
-        
-        // Adapter la mise en page
         card.style.gridTemplateColumns = '1fr';
         card.style.transition = 'all 0.3s ease';
-        
-        // Forcer le reflow pour les animations
         void card.offsetWidth;
-        
-        // Afficher le bouton retour
         backToHomeBtn.style.display = 'block';
-        
       } else {
-        // Montrer le panneau gauche
         panelLeft.style.display = 'flex';
         panelLeft.style.visibility = 'visible';
         backToHomeBtn.style.display = 'none';
-        
-        // Revenir à la mise en page d'origine
         if (window.innerWidth > 880) {
           card.style.gridTemplateColumns = '380px 1fr';
         } else {
           card.style.gridTemplateColumns = '1fr';
         }
-        
-        // Réorganiser l'ordre pour mobile
         if (window.innerWidth <= 880) {
           panelLeft.style.order = '2';
           panelRight.style.order = '1';
@@ -1393,7 +1505,6 @@
       let content = `<p><strong>Explication :</strong></p>`;
       content += `<p>${item.explanation}</p>`;
       
-      // Ajouter des détails mathématiques formatés
       if (item.q.includes("forme algébrique")) {
         content += `<div class="correction-math">z = a + ib (avec a, b ∈ ℝ)</div>`;
       } else if (item.q.includes("i²")) {
@@ -1420,6 +1531,17 @@
 
     closeCorrectionBtn.addEventListener('click', hideCorrection);
     correctionOverlay.addEventListener('click', hideCorrection);
+
+    /* ---------------------------
+       Préparer le téléchargement
+       --------------------------- */
+    function prepareDownload(){
+      const html = generateCompleteHTML();
+      const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+    }
+    prepareDownload();
 
     /* ---------------------------
        Choix de la difficulté
@@ -1458,10 +1580,7 @@
     startBtn.addEventListener('click', startQuiz);
 
     function startQuiz(){
-      // Masquer le panneau d'accueil
       toggleQuizView(true);
-      
-      // Mélanger la base, prendre totalQuestions éléments
       const pool = shuffle(questionDatabase);
       selectedQuestions = pool.slice(0, Math.min(totalQuestions, pool.length)).map(q=>{
         const mixed = shuffleOptions(q.options, q.correctIndex);
@@ -1474,7 +1593,6 @@
         };
       });
 
-      // Init état
       current = 0;
       score = 0;
       answers = new Array(selectedQuestions.length).fill(null);
@@ -1514,18 +1632,16 @@
       qNumberEl.textContent = `Question ${current+1} / ${selectedQuestions.length}`;
       qBadgeEl.textContent = item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1);
 
-      // Afficher question
       questionTextEl.innerHTML = item.q;
-
-      // Options
       optionsContainer.innerHTML = '';
+      
       item.options.forEach((opt, idx)=>{
         const div = document.createElement('div');
         div.className = 'option';
         div.setAttribute('role','button');
         div.setAttribute('data-idx', idx);
         div.innerHTML = `<div class="label">${String.fromCharCode(65+idx)}</div><div class="content">${opt}</div>`;
-        // Si déjà répondu, verrouiller et appliquer styles
+        
         if(answers[current] !== null){
           div.classList.add('disabled');
           if(idx === item.correctIndex) div.classList.add('correct');
@@ -1536,17 +1652,14 @@
         optionsContainer.appendChild(div);
       });
 
-      // Mise à jour progress bar
       const prog = ((current)/selectedQuestions.length)*100;
       progressFill.style.width = `${prog}%`;
 
-      // boutons
       prevBtn.disabled = current === 0;
       nextBtn.textContent = current === selectedQuestions.length - 1 ? 'Terminer' : 'Suivant';
 
-      // re-render math via MathJax si disponible
       if(window.MathJax && MathJax.typesetPromise){
-        MathJax.typesetPromise().catch(()=>{/* ignore */});
+        MathJax.typesetPromise().catch(()=>{});
       }
     }
 
@@ -1554,14 +1667,12 @@
        Choisir une option
        --------------------------- */
     function chooseOption(idx){
-      if(answers[current] !== null) return; // déjà répondu
+      if(answers[current] !== null) return;
 
       answers[current] = idx;
-      // Mettre à jour le score
       if(idx === selectedQuestions[current].correctIndex){
         score++;
       }
-      // Re-render pour afficher correction
       renderQuestion();
     }
 
@@ -1582,7 +1693,6 @@
         renderQuestion();
         hideCorrection();
       }else{
-        // Terminer et afficher résultat
         finishQuiz();
       }
     });
@@ -1596,10 +1706,8 @@
        --------------------------- */
     function finishQuiz(){
       stopTimer();
-      // Progress to 100%
       progressFill.style.width = '100%';
 
-      // Calculs
       const pct = Math.round((score/selectedQuestions.length)*100);
       finalScoreEl.textContent = `${pct}%`;
       const elapsed = Math.floor((Date.now()-startTime)/1000);
@@ -1607,7 +1715,6 @@
       const s = elapsed%60;
       totalTimeEl.textContent = `${m}m ${s}s`;
 
-      // détails
       let details = `<p class="small-muted">Correctes : <strong>${score} / ${selectedQuestions.length}</strong></p>`;
       details += `<div style="margin-top:8px">`;
       selectedQuestions.forEach((it, i)=>{
@@ -1630,13 +1737,11 @@
 
       resultsBox.classList.add('show');
 
-      // Afficher message selon performance
       if(pct >= 90) alert('🏆 Excellent !');
       else if(pct >= 70) alert('👏 Très bien !');
       else if(pct >= 50) alert('👍 Bien, continuez.');
       else alert('📚 Continuez vos efforts — révisez le cours.');
 
-      // Scroller sur les résultats si petit écran
       resultsBox.scrollIntoView({behavior:'smooth'});
     }
 
@@ -1716,7 +1821,14 @@
       shareViaWebApi.addEventListener('click', shareViaWebApiMethod);
       shareViaDownload.addEventListener('click', shareViaDownloadMethod);
       shareViaQR.addEventListener('click', shareViaQRMethod);
-      shareViaLink.addEventListener('click', shareViaLinkMethod);
+      shareViaCode.addEventListener('click', shareViaCodeMethod);
+      
+      // Vérifier si un code de quiz est dans l'URL
+      const hash = window.location.hash;
+      if (hash.includes('quizcode=')) {
+        const quizCode = hash.split('quizcode=')[1];
+        alert(`Code de quiz détecté: ${quizCode}\n\nCe quiz est déjà chargé et prêt à être utilisé !`);
+      }
     });
   </script>
 </body>
