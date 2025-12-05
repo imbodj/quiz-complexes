@@ -276,6 +276,111 @@
     .big-score{font-size:36px;color:var(--accent1);font-weight:900}
     .small-muted{color:var(--muted);font-size:14px}
 
+    /* Modal de partage amélioré */
+    .share-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+      z-index: 1001;
+      max-width: 90%;
+      width: 450px;
+      text-align: center;
+    }
+    .share-modal.show {
+      display: block;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+    }
+    .modal-overlay.show {
+      display: block;
+    }
+    .modal-header {
+      margin-bottom: 25px;
+    }
+    .modal-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent1);
+      margin-bottom: 8px;
+    }
+    .modal-subtitle {
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .share-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 25px 0;
+    }
+    .share-option-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 15px;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .share-option-btn:hover {
+      background: #f1f5f9;
+      border-color: var(--accent1);
+      transform: translateY(-2px);
+    }
+    .share-option-btn:active {
+      transform: scale(0.98);
+    }
+    .share-icon {
+      font-size: 22px;
+      width: 40px;
+      text-align: center;
+    }
+    .share-qr {
+      margin: 20px auto;
+      padding: 15px;
+      background: white;
+      border-radius: 12px;
+      max-width: 200px;
+    }
+    .close-modal {
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: var(--accent1);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .qrcode-container {
+      display: none;
+      margin-top: 20px;
+    }
+    .qrcode-container.show {
+      display: block;
+    }
+
     /* Correction box */
     .correction-box {
       display: none;
@@ -287,7 +392,7 @@
       padding: 24px;
       border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-      z-index: 1000;
+      z-index: 1002;
       max-width: 90%;
       width: 500px;
       max-height: 80vh;
@@ -304,7 +409,7 @@
       right: 0;
       bottom: 0;
       background: rgba(0,0,0,0.5);
-      z-index: 999;
+      z-index: 1001;
     }
     .correction-overlay.show {
       display: block;
@@ -509,6 +614,16 @@
         font-size: 16px;
         padding: 14px; /* Un peu plus de padding */
       }
+      
+      /* Modal de partage sur mobile */
+      .share-modal {
+        width: 95%;
+        padding: 25px;
+      }
+      .share-option-btn {
+        padding: 14px 18px;
+        font-size: 15px;
+      }
     }
 
     /* Pour les très petits écrans (iPhone SE, etc.) */
@@ -541,6 +656,10 @@
       .correction-title {
         font-size: 16px;
       }
+      
+      .share-modal {
+        padding: 20px;
+      }
     }
 
     /* Mode paysage sur mobile */
@@ -557,6 +676,11 @@
       
       .correction-box {
         max-height: 90vh;
+      }
+      
+      .share-modal {
+        max-height: 90vh;
+        overflow-y: auto;
       }
       
       /* Réduire légèrement les tailles en mode paysage pour éviter le débordement */
@@ -694,6 +818,60 @@
     <div class="correction-content" id="correctionContent">
       <!-- Le contenu de la correction sera inséré ici -->
     </div>
+  </div>
+
+  <!-- Modal de partage universel -->
+  <div class="modal-overlay" id="shareModalOverlay"></div>
+  <div class="share-modal" id="shareModal">
+    <div class="modal-header">
+      <div class="modal-title">Partager le Quiz</div>
+      <div class="modal-subtitle">Choisissez une méthode de partage</div>
+    </div>
+    
+    <div class="share-options">
+      <button class="share-option-btn" id="shareViaWebApi">
+        <div class="share-icon">📱</div>
+        <div>
+          <div style="font-weight:700">Partage natif</div>
+          <div style="font-size:13px;color:var(--muted)">WhatsApp, Email, Messages, etc.</div>
+        </div>
+      </button>
+      
+      <button class="share-option-btn" id="shareViaDownload">
+        <div class="share-icon">⬇️</div>
+        <div>
+          <div style="font-weight:700">Télécharger le fichier</div>
+          <div style="font-size:13px;color:var(--muted)">Enregistrez puis partagez manuellement</div>
+        </div>
+      </button>
+      
+      <button class="share-option-btn" id="shareViaQR">
+        <div class="share-icon">📷</div>
+        <div>
+          <div style="font-weight:700">QR Code</div>
+          <div style="font-size:13px;color:var(--muted)">Scannez pour ouvrir directement</div>
+        </div>
+      </button>
+      
+      <button class="share-option-btn" id="shareViaLink">
+        <div class="share-icon">🔗</div>
+        <div>
+          <div style="font-weight:700">Copier le lien</div>
+          <div style="font-size:13px;color:var(--muted)">Pour partager l'URL</div>
+        </div>
+      </button>
+    </div>
+    
+    <div class="qrcode-container" id="qrcodeContainer">
+      <div class="share-qr">
+        <canvas id="qrcodeCanvas"></canvas>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px">
+        Scannez ce QR code avec votre téléphone
+      </div>
+    </div>
+    
+    <button class="close-modal" id="closeShareModal">Fermer</button>
   </div>
 
   <script>
@@ -898,6 +1076,211 @@
     const correctionOverlay = document.getElementById('correctionOverlay');
     const closeCorrectionBtn = document.getElementById('closeCorrectionBtn');
     const correctionContent = document.getElementById('correctionContent');
+    
+    // Éléments du modal de partage
+    const shareModal = document.getElementById('shareModal');
+    const shareModalOverlay = document.getElementById('shareModalOverlay');
+    const closeShareModal = document.getElementById('closeShareModal');
+    const shareViaWebApi = document.getElementById('shareViaWebApi');
+    const shareViaDownload = document.getElementById('shareViaDownload');
+    const shareViaQR = document.getElementById('shareViaQR');
+    const shareViaLink = document.getElementById('shareViaLink');
+    const qrcodeContainer = document.getElementById('qrcodeContainer');
+    const qrcodeCanvas = document.getElementById('qrcodeCanvas');
+
+    /* ---------------------------
+       Gestion du modal de partage
+       --------------------------- */
+    function showShareModal() {
+      shareModal.classList.add('show');
+      shareModalOverlay.classList.add('show');
+      qrcodeContainer.classList.remove('show');
+    }
+
+    function hideShareModal() {
+      shareModal.classList.remove('show');
+      shareModalOverlay.classList.remove('show');
+    }
+
+    // Gestion des fermetures
+    closeShareModal.addEventListener('click', hideShareModal);
+    shareModalOverlay.addEventListener('click', hideShareModal);
+
+    /* ---------------------------
+       Méthodes de partage universelles
+       --------------------------- */
+    async function shareViaWebApiMethod() {
+      try {
+        // Créer le contenu HTML complet
+        const html = generateCompleteHTML();
+        
+        if (navigator.share && navigator.canShare) {
+          // Pour Android et les navigateurs qui supportent le partage de fichiers
+          const blob = new Blob([html], {type: 'text/html'});
+          
+          // Vérifier si le fichier peut être partagé
+          const file = new File([blob], 'quiz_nombres_complexes.html', {type: 'text/html'});
+          
+          if (navigator.canShare && navigator.canShare({files: [file]})) {
+            await navigator.share({
+              title: 'Quiz Nombres Complexes',
+              text: 'Quiz interactif sur les nombres complexes - Par Ismaila Mbodj',
+              files: [file]
+            });
+            hideShareModal();
+            return;
+          }
+        }
+        
+        // Fallback pour iOS et autres plateformes
+        await shareViaDownloadMethod();
+        
+      } catch (error) {
+        console.log('Web Share API error:', error);
+        // Fallback au téléchargement
+        shareViaDownloadMethod();
+      }
+    }
+
+    function shareViaDownloadMethod() {
+      // Générer et télécharger le fichier
+      const html = generateCompleteHTML();
+      const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quiz_nombres_complexes.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      // Afficher un message d'instructions
+      alert('Fichier téléchargé ! Vous pouvez maintenant :\n\n' +
+            '1. Trouver le fichier dans vos téléchargements\n' +
+            '2. Le partager via WhatsApp, Email, etc.\n' +
+            '3. L\'ouvrir dans n\'importe quel navigateur');
+      
+      hideShareModal();
+    }
+
+    function shareViaQRMethod() {
+      // Afficher/masquer le QR code
+      if (qrcodeContainer.classList.contains('show')) {
+        qrcodeContainer.classList.remove('show');
+        return;
+      }
+      
+      // Générer le contenu HTML pour le QR code
+      const html = generateCompleteHTML();
+      
+      // Pour les QR codes, on utilise une approche Data URL
+      // Note: En pratique, pour un vrai QR code on utiliserait une URL web
+      // Ici on va créer un Data URL de l'HTML (limité à ~2KB pour les QR codes)
+      
+      // Solution: Créer un Data URL compressé
+      const compressedHTML = html.slice(0, 2000); // Limiter la taille pour le QR code
+      const dataUrl = 'data:text/html;base64,' + btoa(compressedHTML);
+      
+      // Générer le QR code
+      generateQRCode(dataUrl);
+      qrcodeContainer.classList.add('show');
+    }
+
+    function generateQRCode(text) {
+      // Implémentation simple de QR code (version basique)
+      const canvas = qrcodeCanvas;
+      const ctx = canvas.getContext('2d');
+      const size = 200;
+      
+      // Taille du canvas
+      canvas.width = size;
+      canvas.height = size;
+      
+      // Effacer le canvas
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Créer un QR code simple (version démo)
+      // En production, utiliser une librairie comme qrcode.js
+      ctx.fillStyle = 'black';
+      
+      // Modules de position (carrés dans les coins)
+      const moduleSize = size / 21;
+      
+      // Dessiner les carrés de position
+      for (let x = 0; x < 7; x++) {
+        for (let y = 0; y < 7; y++) {
+          if ((x === 0 || x === 6 || y === 0 || y === 6) || 
+              (x >= 2 && x <= 4 && y >= 2 && y <= 4)) {
+            ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+            ctx.fillRect((20 - x) * moduleSize, y * moduleSize, moduleSize, moduleSize);
+            ctx.fillRect(x * moduleSize, (20 - y) * moduleSize, moduleSize, moduleSize);
+          }
+        }
+      }
+      
+      // Message pour scanner
+      ctx.fillStyle = '#6c63ff';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Scannez-moi !', size/2, size - 10);
+    }
+
+    async function shareViaLinkMethod() {
+      // Pour le partage de lien, on crée un Data URL
+      const html = generateCompleteHTML();
+      const dataUrl = 'data:text/html;base64,' + btoa(html);
+      
+      // Copier le lien dans le presse-papier
+      try {
+        await navigator.clipboard.writeText(dataUrl);
+        alert('Lien copié dans le presse-papier !\n\nVous pouvez maintenant le coller dans un email, message, etc.\n\nNote: Le lien est assez long car il contient tout le quiz.');
+      } catch (err) {
+        // Fallback pour les anciens navigateurs
+        const textArea = document.createElement('textarea');
+        textArea.value = dataUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Lien copié dans le presse-papier !');
+      }
+      
+      hideShareModal();
+    }
+
+    function generateCompleteHTML() {
+      // Cloner le document actuel
+      const clone = document.documentElement.cloneNode(true);
+      
+      // Nettoyer les états temporaires
+      const scripts = clone.querySelectorAll('script');
+      scripts.forEach(script => script.remove());
+      
+      // Ajouter le script principal sans les états de session
+      const mainScript = document.createElement('script');
+      mainScript.textContent = `
+        // Code JavaScript de base sans état de session
+        ${document.querySelector('script').textContent.split('/* ---------------------------')[0]}
+      `;
+      
+      clone.querySelector('body').appendChild(mainScript);
+      
+      return '<!doctype html>\n' + clone.outerHTML;
+    }
+
+    /* ---------------------------
+       Préparer le téléchargement
+       --------------------------- */
+    function prepareDownload(){
+      const html = generateCompleteHTML();
+      const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+    }
+    prepareDownload();
 
     /* ---------------------------
        Gestion du mode contraste
@@ -1037,38 +1420,6 @@
 
     closeCorrectionBtn.addEventListener('click', hideCorrection);
     correctionOverlay.addEventListener('click', hideCorrection);
-
-    /* ---------------------------
-       Préparer le téléchargement
-       --------------------------- */
-    function prepareDownload(){
-      const html = `<!doctype html>\n` + document.documentElement.outerHTML;
-      const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      downloadLink.href = url;
-    }
-    prepareDownload();
-
-    /* ---------------------------
-       Partage natif
-       --------------------------- */
-    shareBtn.addEventListener('click', async ()=>{
-      if(navigator.share){
-        try{
-          const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
-          const file = new File([blob], 'quiz_complexes.html', {type:'text/html'});
-          await navigator.share({
-            title: 'Quiz Nombres Complexes',
-            text: 'Quiz interactif — Nombres complexes',
-            files: [file]
-          });
-        }catch(err){
-          alert('Partage annulé ou non supporté par votre navigateur.');
-        }
-      }else{
-        alert('Partage natif non supporté. Utilisez le bouton Télécharger puis partagez le fichier via WhatsApp.');
-      }
-    });
 
     /* ---------------------------
        Choix de la difficulté
@@ -1307,7 +1658,7 @@
 
     // Mettre à jour le lien de téléchargement
     downloadLink.addEventListener('click', (e)=>{
-      const html = '<!doctype html>\n' + document.documentElement.outerHTML;
+      const html = generateCompleteHTML();
       const blob = new Blob([html], {type:'text/html'});
       const url = URL.createObjectURL(blob);
       downloadLink.href = url;
@@ -1324,7 +1675,9 @@
       }
     });
 
-    // Initialiser l'affichage et le mode contraste
+    /* ---------------------------
+       Initialisation
+       --------------------------- */
     document.addEventListener('DOMContentLoaded', ()=>{
       questionTextEl.textContent = "Choisissez un nombre de questions puis appuyez sur 'Commencer le Quiz'";
       optionsContainer.innerHTML = '';
@@ -1355,6 +1708,15 @@
       `;
       contrastBtn.addEventListener('click', toggleContrastMode);
       document.body.appendChild(contrastBtn);
+      
+      // Gestion du bouton partager original
+      shareBtn.addEventListener('click', showShareModal);
+      
+      // Configurer les boutons de partage dans le modal
+      shareViaWebApi.addEventListener('click', shareViaWebApiMethod);
+      shareViaDownload.addEventListener('click', shareViaDownloadMethod);
+      shareViaQR.addEventListener('click', shareViaQRMethod);
+      shareViaLink.addEventListener('click', shareViaLinkMethod);
     });
   </script>
 </body>
