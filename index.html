@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#6c63ff">
+  <title>Quiz — Nombres Complexes</title>
+
+  <!-- MathJax (optionnel : si pas de réseau, le LaTeX restera lisible) -->
+  <script>
+    // Charger MathJax de façon asynchrone pour accélérer le rendu si présent.
+    (function(){
+      if (!navigator.onLine) return; // si hors-ligne, ne pas charger
+      const s = document.createElement('script');
+      s.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+      s.async = true;
+      document.head.appendChild(s);
+    })();
+  </script>
+
+  <style>
+    :root{
+      --accent1: #6c63ff;
+      --accent2: #9f8bff;
+      --glass: rgba(255,255,255,0.85);
+      --muted: #6b7280;
+      --success: #10b981;
+      --danger: #ef4444;
+      --card-radius: 18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(108,99,255,0.12), transparent 8%),
+                  linear-gradient(135deg,#f6f7fb 0%, #eef2ff 100%);
+      padding:20px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .card{
+      width:100%;
+      max-width:980px;
+      border-radius:var(--card-radius);
+      box-shadow: 0 18px 50px rgba(44,41,60,0.12);
+      overflow:hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.9));
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:0;
+    }
+
+    /* Left panel (intro + controls) */
+    .panel-left{
+      padding:28px;
+      background: linear-gradient(180deg, var(--accent1), var(--accent2));
+      color:white;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      min-height:420px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .logo{
+      width:56px;
+      height:56px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:20px;
+      box-shadow: inset 0 -6px 20px rgba(255,255,255,0.04);
+    }
+
+    .brand h1{
+      font-size:20px;
+      margin:0;
+      letter-spacing:-0.2px;
+    }
+    .brand p{margin:0;font-size:13px;opacity:0.9}
+
+    .intro{
+      background:rgba(255,255,255,0.06);
+      padding:16px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .difficulty-buttons{
+      display:flex;
+      gap:10px;
+      margin-top:6px;
+    }
+    .difficulty{
+      background:rgba(255,255,255,0.14);
+      border:1px solid rgba(255,255,255,0.08);
+      padding:10px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      text-align:center;
+      min-width:88px;
+      transition:transform .18s, background .18s;
+      user-select:none;
+    }
+    .difficulty:hover{transform:translateY(-4px)}
+    .difficulty.selected{
+      background:white;
+      color:var(--accent1);
+      font-weight:700;
+      box-shadow:0 8px 20px rgba(108,99,255,0.14);
+    }
+    .start-btn{
+      margin-top:auto;
+      background:white;
+      color:var(--accent1);
+      border:none;
+      padding:12px 16px;
+      font-weight:700;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:0 8px 22px rgba(108,99,255,0.14);
+    }
+
+    .meta{
+      font-size:13px;
+      opacity:0.95;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .share-row{
+      display:flex;
+      gap:10px;
+      margin-top:6px;
+    }
+    .btn-small{
+      background:rgba(255,255,255,0.12);
+      color:white;
+      border:none;
+      padding:9px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    /* Right panel (quiz) */
+    .panel-right{
+      padding:26px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.8));
+    }
+
+    .progress{
+      height:10px;
+      background:#f1f5f9;
+      border-radius:999px;
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+    .progress .fill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg,var(--accent1),var(--accent2));
+      transition: width .35s ease;
+    }
+
+    .question-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .q-number{font-weight:700;color:var(--muted)}
+    .q-difficulty{font-size:13px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #eef2ff}
+
+    .timer{
+      font-weight:700;
+      color:var(--accent1);
+    }
+
+    .question-text{
+      font-size:18px;
+      margin:14px 0 18px 0;
+      color:#111827;
+      line-height:1.5;
+    }
+
+    .options{
+      display:grid;
+      gap:10px;
+    }
+
+    .option{
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid #e6e9f2;
+      background:white;
+      cursor:pointer;
+      transition:transform .12s, box-shadow .12s, border-color .12s;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-height:56px;
+      line-height:1.2;
+    }
+    .option:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(16,24,40,0.06)}
+    .option .label{
+      font-weight:700;
+      min-width:30px;
+      text-align:center;
+      color:var(--accent1);
+    }
+    .option.disabled{cursor:not-allowed;opacity:0.7;transform:none;box-shadow:none}
+    .option.correct{border-color:var(--success);background:rgba(16,185,129,0.07)}
+    .option.incorrect{border-color:var(--danger);background:rgba(239,68,68,0.06)}
+
+    .nav{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:18px;
+      align-items:center;
+    }
+
+    .nav .btn{
+      padding:10px 14px;
+      border-radius:10px;
+      border:none;
+      background:var(--accent1);
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 8px 22px rgba(108,99,255,0.08);
+    }
+    .btn.secondary{background:transparent;color:var(--muted);border:1px solid #eef2ff;font-weight:600}
+
+    .results{
+      display:none;
+      padding:18px;
+      border-radius:12px;
+      background:#fff;
+      margin-top:14px;
+      box-shadow:0 6px 20px rgba(16,24,40,0.04);
+    }
+    .results.show{display:block}
+    .big-score{font-size:36px;color:var(--accent1);font-weight:900}
+    .small-muted{color:var(--muted);font-size:14px}
+
+    footer.author{
+      text-align:center;
+      margin-top:14px;
+      font-style:italic;
+      color:var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width:880px){
+      .card{grid-template-columns:1fr; padding:0}
+      .panel-left{order:2;padding:18px}
+      .panel-right{order:1;padding:18px}
+    }
+  </style>
+</head>
+<body>
+  <div class="card" role="application" aria-label="Quiz sur les nombres complexes">
+    <div class="panel-left">
+      <div class="brand">
+        <div class="logo">ℂ</div>
+        <div>
+          <h1>Quiz Nombres Complexes</h1>
+          <p>Révisez formes, modules, arguments et applications géométriques</p>
+        </div>
+      </div>
+
+      <div class="intro">
+        <strong>Instructions :</strong>
+        <ul style="margin:8px 0 0 18px;line-height:1.45">
+          <li>Choisissez un niveau puis appuyez sur <strong>Commencer</strong>.</li>
+          <li>Chaque question mélange automatiquement les réponses.</li>
+          <li>Vous pouvez revenir en arrière et voir la correction.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-weight:700; margin-bottom:8px">Choisir le nombre de questions</div>
+        <div class="difficulty-buttons" role="list">
+          <div class="difficulty selected" data-count="10">Facile<br><small style="opacity:0.9">10 q</small></div>
+          <div class="difficulty" data-count="15">Moyen<br><small style="opacity:0.9">15 q</small></div>
+          <div class="difficulty" data-count="20">Difficile<br><small style="opacity:0.9">20 q</small></div>
+        </div>
+      </div>
+
+      <button class="start-btn" id="startBtn" aria-label="Commencer le quiz">Commencer le Quiz</button>
+
+      <div class="meta">
+        <div style="font-size:13px">Auteur : <strong>Ismaila Mbodj</strong></div>
+      </div>
+
+      <div class="share-row">
+        <button class="btn-small" id="shareBtn" title="Partager (si supporté)">Partager</button>
+        <a id="downloadLink" class="btn-small" download="quiz_complexes.html" title="Télécharger le fichier HTML">Télécharger</a>
+      </div>
+
+      <div style="font-size:12px;color:rgba(255,255,255,0.86);margin-top:10px">
+        Fichier autonome, prêt à être partagé. Si vous souhaitez un PDF, ouvrez le fichier dans le navigateur puis imprimez/sauvegardez en PDF.
+      </div>
+    </div>
+
+    <div class="panel-right">
+      <div class="progress" aria-hidden="true">
+        <div class="fill" id="progressFill"></div>
+      </div>
+
+      <div class="question-head">
+        <div>
+          <div class="q-number" id="qNumber">Question 0/0</div>
+          <div class="q-difficulty" id="qBadge">—</div>
+        </div>
+        <div class="timer" id="timer">⏱️ 00:00</div>
+      </div>
+
+      <div class="question-text" id="questionText">Appuyez sur <strong>Commencer</strong> pour lancer le quiz.</div>
+
+      <div class="options" id="optionsContainer" role="list"></div>
+
+      <div class="nav" style="margin-top:14px">
+        <button class="btn secondary" id="prevBtn">Précédent</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn secondary" id="hintBtn" title="Afficher la correction">Afficher la correction</button>
+          <button class="btn" id="nextBtn">Suivant</button>
+        </div>
+      </div>
+
+      <div class="results" id="resultsBox" aria-live="polite">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="small-muted">Résultat</div>
+            <div class="big-score" id="finalScore">--%</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small-muted">Temps total</div>
+            <div id="totalTime" style="font-weight:700">--m --s</div>
+          </div>
+        </div>
+        <div style="margin-top:12px" id="resultDetails"></div>
+      </div>
+
+      <footer class="author">Bonne chance !</footer>
+    </div>
+  </div>
+
+  <script>
+    /* ---------------------------
+       Base de données des questions
+       (issues et complétées d'après votre contenu)
+       --------------------------- */
+    const questionDatabase = [
+      // FACILE
+      {q: "Quelle est la forme algébrique d'un nombre complexe \\(z\\) ?", options:[
+        "\\(z = a + ib\\) où \\(a\\) et \\(b\\) sont des réels",
+        "\\(z = r(\\cos\\theta + i\\sin\\theta)\\)",
+        "\\(z = re^{i\\theta}\\)",
+        "\\(z = a - ib\\)"
+      ], correctIndex:0, difficulty:"facile", explanation:"La forme algébrique s'écrit \\(z = a + ib\\)."},
+
+      {q:"Que vaut \\(i^2\\) ?", options:["\\(-1\\)","\\(1\\)","\\(0\\)","\\(i\\)"], correctIndex:0, difficulty:"facile", explanation:"Par définition \\(i^2=-1\\)."},
+
+      {q:"Si \\(z = 3 + 4i\\), quel est le conjugué \\(\\overline{z}\\) ?", options:[
+        "\\(3 - 4i\\)","\\(-3 + 4i\\)","\\(-3 - 4i\\)","\\(4 + 3i\\)"
+      ], correctIndex:0, difficulty:"facile", explanation:"On change le signe de la partie imaginaire."},
+
+      {q:"Quelle est la formule d'Euler \\(e^{i\\theta}\\) ?", options:[
+        "\\(\\cos\\theta + i\\sin\\theta\\)","\\(\\cos\\theta - i\\sin\\theta\\)","\\(\\sin\\theta + i\\cos\\theta\\)","\\(\\cos\\theta \\times \\sin\\theta\\)"
+      ], correctIndex:0, difficulty:"facile", explanation:"La célèbre identité d'Euler."},
+
+      {q:"Quelle est la partie réelle de \\(z = 5 + 2i\\) ?", options:["\\(5\\)","\\(2\\)","\\(7\\)","\\(3\\)"], correctIndex:0, difficulty:"facile", explanation:"La partie réelle est le coefficient sans \\(i\\)."},
+
+      {q:"Quelle est la partie imaginaire de \\(z = -3 + 7i\\) ?", options:["\\(7\\)","\\(-3\\)","\\(7i\\)","\\(4\\)"], correctIndex:0, difficulty:"facile", explanation:"C'est le coefficient du terme en \\(i\\)."},
+
+      {q:"Que vaut \\(i^4\\) ?", options:["\\(1\\)","\\(-1\\)","\\(i\\)","\\(-i\\)"], correctIndex:0, difficulty:"facile", explanation:"\\(i^4 = (i^2)^2 = 1\\)."},
+      {q:"Si \\(z = x + iy\\), que vaut \\(z + \\overline{z}\\) ?", options:["\\(2x\\)","\\(2iy\\)","\\(0\\)","\\(2(x+y)\\)"], correctIndex:0, difficulty:"facile", explanation:"Les parties imaginaires se compensent."},
+      {q:"Quelle est la forme exponentielle de \\(-1\\) ?", options:["\\(e^{i\\pi}\\)","\\(e^{-i\\pi}\\)","\\(e^{i\\pi/2}\\)","\\(e^{2i\\pi}\\)"], correctIndex:0, difficulty:"facile", explanation:"\\(-1 = e^{i\\pi}\\) (à une période près)."},
+
+      // MOYEN
+      {q:"Si \\(z = 3 + 4i\\), quel est le module \\(|z|\\) ?", options:["\\(5\\)","\\(7\\)","\\(\\sqrt{7}\\)","\\(25\\)"], correctIndex:0, difficulty:"moyen", explanation:"\\(|z|=\\sqrt{3^2+4^2}=5\\)."},
+      {q:"Que vaut \\(|z|^2\\) ?", options:["\\(z\\times\\overline{z}\\)","\\(z+\\overline{z}\\)","\\(z-\\overline{z}\\)","\\(z\\div\\overline{z}\\)"], correctIndex:0, difficulty:"moyen", explanation:"Par définition \\(|z|^2=z\\overline{z}\\)."},
+      {q:"Si \\(z_1=2+3i\\) et \\(z_2=1-i\\), que vaut \\(z_1+z_2\\) ?", options:["\\(3+2i\\)","\\(3+4i\\)","\\(1+2i\\)","\\(2+2i\\)"], correctIndex:0, difficulty:"moyen", explanation:"Addition terme à terme."},
+      {q:"Que représente géométriquement \\(|z_A-z_B|\\) ?", options:[
+        "La distance entre A et B","L'aire du triangle OAB","L'angle entre vecteurs","Le milieu de [AB]"
+      ], correctIndex:0, difficulty:"moyen", explanation:"C'est la distance entre A et B."},
+      {q:"Quelle propriété pour le conjugué d'un produit ?", options:[
+        "\\(\\overline{z_1z_2}=\\overline{z_1}\\,\\overline{z_2}\\)","\\(\\overline{z_1z_2}=\\overline{z_1}+\\overline{z_2}\\)","\\(= -\\overline{z_1}\\,\\overline{z_2}\\)","\\(=\\overline{z_1}-\\overline{z_2}\\)"
+      ], correctIndex:0, difficulty:"moyen", explanation:"Le conjugué distribue sur le produit."},
+      {q:"Forme trigonométrique du nombre \\(i\\) ?", options:[
+        "\\(\\cos(\\tfrac{\\pi}{2})+i\\sin(\\tfrac{\\pi}{2})\\)","\\(\\cos\\pi + i\\sin\\pi\\)","\\(\\cos0 + i\\sin0\\)","\\(\\cos\\tfrac{\\pi}{4}+i\\sin\\tfrac{\\pi}{4}\\)"
+      ], correctIndex:0, difficulty:"moyen", explanation:"\\(i\\) a argument \\(\\pi/2\\) et module 1."},
+      {q:"Que vaut \\((1+i)^2\\) ?", options:["\\(2i\\)","\\(2\\)","\\(1+2i\\)","\\(0\\)"], correctIndex:0, difficulty:"moyen", explanation:"Développer donne \\(2i\\)."},
+      {q:"Si \\(|z|=1\\), que peut-on dire du point d'affixe \\(z\\) ?", options:[
+        "M est sur le cercle unité","M est sur l'axe réel","M est sur l'axe imaginaire","M est à l'origine"
+      ], correctIndex:0, difficulty:"moyen", explanation:"Distance 1 à l'origine → cercle unité."},
+      {q:"Que vaut \\(i^{2025}\\) ?", options:["\\(i\\)","\\(-i\\)","\\(1\\)","\\(-1\\)"], correctIndex:0, difficulty:"moyen", explanation:"2025 ≡ 1 (mod 4) donc \\(i\\)."},
+      {q:"Pour \\(z=1+i\\sqrt{3}\\), quel est \\(\\arg(z)\\) ?", options:["\\(\\tfrac{\\pi}{3}\\)","\\(\\tfrac{\\pi}{6}\\)","\\(\\tfrac{\\pi}{4}\\)","\\(\\tfrac{2\\pi}{3}\\)"], correctIndex:0, difficulty:"moyen", explanation:"Tan = √3 → angle π/3."},
+      {q:"Combien de solutions pour \\(z^3=8\\) dans \\(\\mathbb{C}\\) ?", options:["\\(3\\)","\\(1\\)","\\(2\\)","\\(4\\)"], correctIndex:0, difficulty:"moyen", explanation:"Une équation de degré 3 a 3 racines complexes (avec multiplicité)."},
+      {q:"Si \\(|z-2i|=3\\), l'ensemble des z est :", options:[
+        "Un cercle de centre \\((0,2)\\) et rayon 3",
+        "Un cercle de centre \\((2,0)\\) et rayon 3",
+        "Une droite","Un segment"
+      ], correctIndex:0, difficulty:"moyen", explanation:"Distance fixe à 2i → cercle centré en (0,2)."},
+      // DIFFICILE
+      {q:"Si \\(z_1=r_1e^{i\\theta_1}\\) et \\(z_2=r_2e^{i\\theta_2}\\), que vaut \\(z_1\\times z_2\\) ?", options:[
+        "\\(r_1r_2 e^{i(\\theta_1+\\theta_2)}\\)","\\(r_1r_2 e^{i(\\theta_1-\\theta_2)}\\)","\\((r_1+r_2) e^{i(\\theta_1+\\theta_2)}\\)","\\(r_1r_2 e^{i\\theta_1\\theta_2}\\)"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Modules multiplient, arguments s'additionnent."},
+      {q:"Combien de racines cubiques possède un nombre complexe non nul ?", options:["\\(3\\)","\\(2\\)","\\(1\\)","Infini"], correctIndex:0, difficulty:"difficile", explanation:"Un nombre non nul a exactement n racines n-ièmes."},
+      {q:"Si A,B,C sont alignés, que vaut \\(\\dfrac{z_C-z_A}{z_B-z_A}\\) ?", options:[
+        "C'est un nombre réel","C'est un imaginaire pur","Son module vaut 1","Son argument vaut \\(\\tfrac{\\pi}{2}\\)"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Rapport réel ⇔ alignement."},
+      {q:"Que représente \\(\\arg(z_A-z_B)\\) géométriquement ?", options:[
+        "L'angle (Ox, \\overrightarrow{AB})","La longueur AB","L'aire du triangle OAB","Le périmètre"
+      ], correctIndex:0, difficulty:"difficile", explanation:"C'est l'angle entre l'axe réel et le vecteur AB."},
+      {q:"Quelle est la formule de Moivre ?", options:[
+        "\\((\\cos\\theta+i\\sin\\theta)^n=\\cos(n\\theta)+i\\sin(n\\theta)\\)",
+        "\\((\\cos\\theta+i\\sin\\theta)^n=\\cos\\theta^n+i\\sin\\theta^n\\)",
+        "\\((\\cos\\theta+i\\sin\\theta)^n=n\\cos\\theta+ni\\sin\\theta\\)",
+        "\\((\\cos\\theta+i\\sin\\theta)^n=\\cos(\\theta^n)+i\\sin(\\theta^n)\\)"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Formule de Moivre classique."},
+      {q:"Pour \\(z^2+z+1=0\\), que vaut \\(\\Delta\\) ?", options:["\\(-3\\)","\\(3\\)","\\(1\\)","\\(0\\)"], correctIndex:0, difficulty:"difficile", explanation:"\\(\\Delta=1-4=-3\\)."},
+      {q:"Une similitude directe conserve :", options:[
+        "Les angles","Les aires","Les longueurs exactes","L'orientation inverse"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Elle conserve les angles et l'orientation."},
+      {q:"Comment linéariser \\(\\cos^3(x)\\) ?", options:[
+        "Avec Euler et le binôme","En dérivant","En intégrant","Avec la trigonométrie seule"
+      ], correctIndex:0, difficulty:"difficile", explanation:"On utilise l'exponentielle complexe (formule d'Euler)."},
+      {q:"Multiplier par \\(e^{i\\tfrac{\\pi}{2}}\\) correspond à :", options:[
+        "Une rotation de \\(\\tfrac{\\pi}{2}\\)","Une translation","Une homothétie","Une symétrie"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Multiplication par un nombre unitaire = rotation."},
+      {q:"Factorisation de \\(z^2-1\\) dans \\(\\mathbb{C}\\) :", options:[
+        "\\((z-1)(z+1)\\)","\\((z-i)(z+i)\\)","\\((z-1)^2\\)","\\(z(z-1)\\)"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Identité algébrique directe."},
+      {q:"Les racines 4-ièmes de 16 sont :", options:[
+        "\\(2,-2,2i,-2i\\)","\\(4,-4,4i,-4i\\)","\\(1,i,-1,-i\\)","\\(16,16i,-16,-16i\\)"
+      ], correctIndex:0, difficulty:"difficile", explanation:"Racines: \\(2e^{ik\\pi/2}\\) pour k=0..3."}
+    ];
+
+    /* ---------------------------
+       Utilitaires : mélanger tableau et mélanger options en conservant l'indice correct
+       --------------------------- */
+    function shuffle(array){
+      const a = array.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    // Retourne {options: [...], newCorrectIndex}
+    function shuffleOptions(options, correctIndex){
+      const arr = options.map((text, idx) => ({text, idx}));
+      const shuffled = shuffle(arr);
+      const newOptions = shuffled.map(x => x.text);
+      const newCorrectIndex = shuffled.findIndex(x => x.idx === correctIndex);
+      return {options:newOptions, newCorrectIndex};
+    }
+
+    /* ---------------------------
+       État du quiz
+       --------------------------- */
+    let selectedQuestions = [];
+    let current = 0;
+    let score = 0;
+    let answers = []; // store chosen index per question (or null)
+    let startTime = null;
+    let timerInterval = null;
+    let totalQuestions = 10;
+
+    // Elements
+    const startBtn = document.getElementById('startBtn');
+    const difficultyEls = Array.from(document.querySelectorAll('.difficulty'));
+    const qNumberEl = document.getElementById('qNumber');
+    const qBadgeEl = document.getElementById('qBadge');
+    const questionTextEl = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const hintBtn = document.getElementById('hintBtn');
+    const progressFill = document.getElementById('progressFill');
+    const timerEl = document.getElementById('timer');
+    const resultsBox = document.getElementById('resultsBox');
+    const finalScoreEl = document.getElementById('finalScore');
+    const totalTimeEl = document.getElementById('totalTime');
+    const resultDetails = document.getElementById('resultDetails');
+    const downloadLink = document.getElementById('downloadLink');
+    const shareBtn = document.getElementById('shareBtn');
+
+    // Préparer le lien de téléchargement (download du fichier HTML)
+    (function prepareDownload(){
+      // Serialize the current document HTML to download; user may want to save exact file.
+      const html = `<!doctype html>\n` + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+    })();
+
+    // Partage natif (Web Share API)
+    shareBtn.addEventListener('click', async ()=>{
+      if(navigator.share){
+        try{
+          const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+          const file = new File([blob], 'quiz_complexes.html', {type:'text/html'});
+          await navigator.share({
+            title: 'Quiz Nombres Complexes',
+            text: 'Quiz interactif — Nombres complexes',
+            files: [file]
+          });
+        }catch(err){
+          alert('Partage annulé ou non supporté par votre navigateur.');
+        }
+      }else{
+        alert('Partage natif non supporté. Utilisez le bouton Télécharger puis partagez le fichier via WhatsApp.');
+      }
+    });
+
+    // Choix de la difficulté (nombre de questions)
+    difficultyEls.forEach(el=>{
+      el.addEventListener('click', ()=>{
+        difficultyEls.forEach(x=>x.classList.remove('selected'));
+        el.classList.add('selected');
+        totalQuestions = parseInt(el.dataset.count,10);
+      });
+    });
+
+    /* ---------------------------
+       Démarrer le quiz
+       --------------------------- */
+    startBtn.addEventListener('click', startQuiz);
+
+    function startQuiz(){
+      // Mélanger la base, prendre totalQuestions éléments (si base trop courte, prendre tout)
+      const pool = shuffle(questionDatabase);
+      selectedQuestions = pool.slice(0, Math.min(totalQuestions, pool.length)).map(q=>{
+        // On clone et on mélange les options : crucial pour que la bonne réponse ne soit pas toujours la 1ère
+        const mixed = shuffleOptions(q.options, q.correctIndex);
+        return {
+          q: q.q,
+          options: mixed.options,
+          correctIndex: mixed.newCorrectIndex,
+          difficulty: q.difficulty,
+          explanation: q.explanation
+        };
+      });
+
+      // Init état
+      current = 0;
+      score = 0;
+      answers = new Array(selectedQuestions.length).fill(null);
+      startTime = Date.now();
+      startTimer();
+      resultsBox.classList.remove('show');
+      renderQuestion();
+    }
+
+    /* ---------------------------
+       Timer
+       --------------------------- */
+    function startTimer(){
+      if(timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{
+        const elapsed = Math.floor((Date.now() - startTime)/1000);
+        const m = Math.floor(elapsed/60).toString().padStart(2,'0');
+        const s = (elapsed%60).toString().padStart(2,'0');
+        timerEl.textContent = `⏱️ ${m}:${s}`;
+      },1000);
+    }
+
+    function stopTimer(){
+      if(timerInterval) clearInterval(timerInterval);
+    }
+
+    /* ---------------------------
+       Rendu de la question
+       --------------------------- */
+    function renderQuestion(){
+      if(!selectedQuestions.length){
+        questionTextEl.textContent = "Choisissez un nombre de questions puis appuyez sur Commencer.";
+        return;
+      }
+      const item = selectedQuestions[current];
+      qNumberEl.textContent = `Question ${current+1} / ${selectedQuestions.length}`;
+      qBadgeEl.textContent = item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1);
+
+      // Afficher question (LaTeX entre \( \) est laissé; MathJax s'occupera si chargé)
+      questionTextEl.innerHTML = item.q;
+
+      // Options
+      optionsContainer.innerHTML = '';
+      item.options.forEach((opt, idx)=>{
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.setAttribute('role','button');
+        div.setAttribute('data-idx', idx);
+        div.innerHTML = `<div class="label">${String.fromCharCode(65+idx)}</div><div class="content">${opt}</div>`;
+        // Si déjà répondu, verrouiller et appliquer styles
+        if(answers[current] !== null){
+          div.classList.add('disabled');
+          if(idx === item.correctIndex) div.classList.add('correct');
+          else if(idx === answers[current]) div.classList.add('incorrect');
+        }else{
+          div.addEventListener('click', ()=> chooseOption(idx));
+        }
+        optionsContainer.appendChild(div);
+      });
+
+      // Mise à jour progress bar
+      const prog = ((current)/selectedQuestions.length)*100;
+      progressFill.style.width = `${prog}%`;
+
+      // boutons
+      prevBtn.disabled = current === 0;
+      nextBtn.textContent = current === selectedQuestions.length - 1 ? 'Terminer' : 'Suivant';
+
+      // re-render math via MathJax si disponible
+      if(window.MathJax && MathJax.typesetPromise){
+        MathJax.typesetPromise().catch(()=>{/* ignore */});
+      }
+    }
+
+    /* ---------------------------
+       Choisir une option
+       --------------------------- */
+    function chooseOption(idx){
+      if(answers[current] !== null) return; // déjà répondu
+
+      answers[current] = idx;
+      // Mettre à jour le score
+      if(idx === selectedQuestions[current].correctIndex){
+        score++;
+      }
+      // Re-render pour afficher correction
+      renderQuestion();
+    }
+
+    /* ---------------------------
+       Navigation
+       --------------------------- */
+    prevBtn.addEventListener('click', ()=>{
+      if(current>0){ current--; renderQuestion(); }
+    });
+    nextBtn.addEventListener('click', ()=>{
+      if(current < selectedQuestions.length - 1){
+        current++; renderQuestion();
+      }else{
+        // Terminer et afficher résultat
+        finishQuiz();
+      }
+    });
+
+    hintBtn.addEventListener('click', ()=>{
+      // Affiche la correction (explication) pour la question courante
+      const item = selectedQuestions[current];
+      const msg = item.explanation ? item.explanation : 'Pas d\'explication fournie.';
+      // Afficher en bas (alert simple)
+      const w = window.open('', '_blank', 'toolbar=0,location=0,menubar=0');
+      w.document.write(`<p style="font-family:Arial;padding:20px">Explication : <strong>${msg}</strong></p>`);
+      w.document.close();
+    });
+
+    /* ---------------------------
+       Fin du quiz
+       --------------------------- */
+    function finishQuiz(){
+      stopTimer();
+      // Progress to 100%
+      progressFill.style.width = '100%';
+
+      // Calculs
+      const pct = Math.round((score/selectedQuestions.length)*100);
+      finalScoreEl.textContent = `${pct}%`;
+      const elapsed = Math.floor((Date.now()-startTime)/1000);
+      const m = Math.floor(elapsed/60);
+      const s = elapsed%60;
+      totalTimeEl.textContent = `${m}m ${s}s`;
+
+      // détails
+      let details = `<p class="small-muted">Correctes : <strong>${score} / ${selectedQuestions.length}</strong></p>`;
+      details += `<div style="margin-top:8px">`;
+      selectedQuestions.forEach((it, i)=>{
+        const chosen = answers[i];
+        const ok = chosen === it.correctIndex;
+        details += `<div style="padding:8px 0;border-top:1px solid #f1f5f9">
+          <div style="font-weight:700">Q${i+1} — ${ok ? '✓ Correct' : '✗ Incorrect'}</div>
+          <div style="font-size:14px;color:#374151;margin-top:6px">${it.q}</div>
+          <div style="font-size:13px;margin-top:6px;color:${ok? 'green':'#ef4444'}">
+            Votre réponse : ${chosen===null ? '<em>non répondue</em>' : String.fromCharCode(65+chosen)}
+            &nbsp;•&nbsp; Bonne : ${String.fromCharCode(65+it.correctIndex)}
+          </div>
+          <div style="margin-top:6px;color:#374151">${it.explanation ?? ''}</div>
+        </div>`;
+      });
+      details += `</div>`;
+      resultDetails.innerHTML = details;
+
+      resultsBox.classList.add('show');
+
+      // Afficher message selon performance (toast simple)
+      if(pct >= 90) alert('🏆 Excellent !');
+      else if(pct >= 70) alert('👏 Très bien !');
+      else if(pct >= 50) alert('👍 Bien, continuez.');
+      else alert('📚 Continuez vos efforts — révisez le cours.');
+
+      // Scroller sur les résultats si petit écran
+      resultsBox.scrollIntoView({behavior:'smooth'});
+    }
+
+    // Au chargement, afficher small helpers
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // nothing for now
+    });
+
+    // Pour s'assurer que le téléchargement propose le HTML complet (mise à jour à la demande)
+    downloadLink.addEventListener('click', (e)=>{
+      // Recréer un blob à la volée (pour contenir l'état actuel)
+      const html = '<!doctype html>\\n' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+    });
+
+    // Accessibility: keyboard navigation pour les options
+    optionsContainer.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter' || ev.key === ' '){
+        const el = document.activeElement;
+        if(el && el.classList.contains('option') && !el.classList.contains('disabled')){
+          const idx = parseInt(el.dataset.idx,10);
+          chooseOption(idx);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
